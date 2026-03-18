@@ -16,11 +16,10 @@
     import net.minecraft.world.InteractionHand;
     import net.minecraft.world.entity.*;
     import net.minecraft.world.entity.ai.goal.Goal;
-    import net.minecraft.world.entity.monster.Zombie;
+    import net.minecraft.world.entity.monster.zombie.Zombie;
     import net.minecraft.world.entity.player.Player;
-    import net.minecraft.world.entity.projectile.windcharge.WindCharge;
-    import net.minecraft.world.item.ItemStack;
-    import net.minecraft.world.item.Items;
+    import net.minecraft.world.entity.projectile.hurtingprojectile.windcharge.WindCharge;
+    import net.minecraft.world.item.ItemStack;    import net.minecraft.world.item.Items;
     import net.minecraft.world.item.MaceItem;
     import net.minecraft.world.item.WindChargeItem;
     import net.minecraft.world.item.enchantment.Enchantment;

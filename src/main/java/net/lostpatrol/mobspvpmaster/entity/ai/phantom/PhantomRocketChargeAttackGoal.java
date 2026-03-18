@@ -8,7 +8,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.goal.Goal;
-import net.minecraft.world.entity.animal.Cat;
+import net.minecraft.world.entity.animal.feline.Cat;
 import net.minecraft.world.entity.monster.Phantom;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.FireworkRocketEntity;
@@ -51,7 +51,7 @@ public class PhantomRocketChargeAttackGoal extends Goal{
         if (!this.phantom.getPersistentData().getBoolean(Constants.ENHANCED_PHANTOM_BOOLEAN).orElse(false)){
             return false;
         }
-        return phantom.getMainHandItem().getItem() == Items.DIAMOND_SWORD && phantom.getOffhandItem().getItem() == Items.FIREWORK_ROCKET;
+        return phantom.getMainHandItem().getItem() == Items.NETHERITE_SPEAR && phantom.getOffhandItem().getItem() == Items.FIREWORK_ROCKET;
     }
 
     @Override

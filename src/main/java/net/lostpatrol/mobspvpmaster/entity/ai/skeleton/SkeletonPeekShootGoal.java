@@ -1,7 +1,7 @@
 package net.lostpatrol.mobspvpmaster.entity.ai.skeleton;
 
 import net.lostpatrol.mobspvpmaster.MobsPVPMaster;
-import net.minecraft.world.entity.monster.Skeleton;
+import net.minecraft.world.entity.monster.skeleton.Skeleton;
 import org.slf4j.Logger;
 
 public class SkeletonPeekShootGoal {

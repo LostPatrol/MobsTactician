@@ -12,19 +12,16 @@ import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.MobRenderer;
 import net.lostpatrol.mobspvpmaster.client.render.entity.layers.EnhancedPhantomEyesLayer;
 import net.lostpatrol.mobspvpmaster.client.render.entity.state.PhantomHoldingRenderState;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.monster.Phantom;
 import net.minecraft.world.item.ItemDisplayContext;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 
-@OnlyIn(Dist.CLIENT)
 public class EnhancedPhantomRenderer extends MobRenderer<Phantom, PhantomHoldingRenderState, EnhancedPhantomModel> {
     public static final Logger logger = MobsPVPMaster.LOGGER;
 
-    private static final ResourceLocation PHANTOM_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/phantom.png");
+    private static final Identifier PHANTOM_LOCATION = Identifier.withDefaultNamespace("textures/entity/phantom.png");
 
     public EnhancedPhantomRenderer(EntityRendererProvider.Context context) {
         super(context, new EnhancedPhantomModel(context.bakeLayer(ModelLayers.PHANTOM)), 0.75F);
@@ -35,7 +32,7 @@ public class EnhancedPhantomRenderer extends MobRenderer<Phantom, PhantomHolding
     }
 
     @NotNull
-    public ResourceLocation getTextureLocation(@NotNull PhantomHoldingRenderState phantomHoldingRenderState) {
+    public Identifier getTextureLocation(@NotNull PhantomHoldingRenderState phantomHoldingRenderState) {
         return PHANTOM_LOCATION;
     }
 

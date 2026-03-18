@@ -10,11 +10,8 @@ import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.lostpatrol.mobspvpmaster.client.render.entity.state.PhantomHoldingRenderState;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import org.slf4j.Logger;
 
-@OnlyIn(Dist.CLIENT)
 public class PhantomRocketLayer extends RenderLayer<PhantomHoldingRenderState, EnhancedPhantomModel> {
     public static final Logger logger = MobsPVPMaster.LOGGER;
 

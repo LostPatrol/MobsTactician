@@ -10,10 +10,7 @@ import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.lostpatrol.mobspvpmaster.client.render.entity.state.PhantomHoldingRenderState;
 import net.minecraft.util.Mth;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 
-@OnlyIn(Dist.CLIENT)
 public class EnhancedPhantomModel extends EntityModel<PhantomHoldingRenderState> {
     public static final String TAIL_BASE = "tail_base";
     public static final String TAIL_TIP = "tail_tip";

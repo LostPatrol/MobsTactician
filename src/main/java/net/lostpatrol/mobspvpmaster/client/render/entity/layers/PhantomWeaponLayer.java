@@ -10,11 +10,8 @@ import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.lostpatrol.mobspvpmaster.client.render.entity.state.PhantomHoldingRenderState;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import org.slf4j.Logger;
 
-@OnlyIn(Dist.CLIENT)
 public class PhantomWeaponLayer extends RenderLayer<PhantomHoldingRenderState, EnhancedPhantomModel> {
     public static final Logger logger = MobsPVPMaster.LOGGER;
 
@@ -28,14 +25,17 @@ public class PhantomWeaponLayer extends RenderLayer<PhantomHoldingRenderState, E
             poseStack.pushPose();
             poseStack.translate(this.getParentModel().leftWingTip.x / 16.0F, this.getParentModel().leftWingTip.y / 16.0F, this.getParentModel().leftWingTip.z / 16.0F);
 
+            poseStack.mulPose(Axis.YP.rotationDegrees(43.0F));
+            poseStack.mulPose(Axis.ZP.rotationDegrees(10.0F));
             poseStack.mulPose(Axis.ZP.rotation(this.getParentModel().leftWingBase.zRot));
             poseStack.mulPose(Axis.ZP.rotation(this.getParentModel().leftWingTip.zRot));
 
-            poseStack.mulPose(Axis.ZP.rotation(0.27F));
+            poseStack.mulPose(Axis.ZP.rotation(-0.3F));
             poseStack.mulPose(Axis.YP.rotationDegrees(yRot));
 //            poseStack.mulPose(Axis.XP.rotationDegrees(xRot));
 
-            poseStack.translate(0.5F, -0.24F, -0.5F);
+//            poseStack.translate(0.5F, -0.24F, -0.5F);
+            poseStack.translate(0.6F, 0F, -0.45F);
 
             poseStack.mulPose(Axis.XP.rotationDegrees(-90.0F));
 

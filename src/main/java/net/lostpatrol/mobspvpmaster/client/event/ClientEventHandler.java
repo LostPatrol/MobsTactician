@@ -4,7 +4,7 @@ import net.lostpatrol.mobspvpmaster.MobsPVPMaster;
 import net.lostpatrol.mobspvpmaster.client.model.EnhancedPhantomModel;
 import net.lostpatrol.mobspvpmaster.client.render.entity.EnhancedPhantomRenderer;
 import net.minecraft.client.model.geom.ModelLayerLocation;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.EntityType;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -23,7 +23,7 @@ public class ClientEventHandler {
     }
 
     public static final ModelLayerLocation phantomWeaponLayerLocation = new ModelLayerLocation(
-            ResourceLocation.fromNamespaceAndPath(MobsPVPMaster.MODID, "enhanced_phantom"),
+            Identifier.fromNamespaceAndPath(MobsPVPMaster.MODID, "enhanced_phantom"),
             "phantom_weapon"
     );
 
