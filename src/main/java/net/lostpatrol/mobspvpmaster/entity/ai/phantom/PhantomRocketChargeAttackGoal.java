@@ -2,10 +2,13 @@ package net.lostpatrol.mobspvpmaster.entity.ai.phantom;
 
 import net.lostpatrol.mobspvpmaster.MobsPVPMaster;
 import net.lostpatrol.mobspvpmaster.util.Constants;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EntitySelector;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.animal.feline.Cat;
@@ -15,6 +18,7 @@ import net.minecraft.world.entity.projectile.FireworkRocketEntity;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.KineticWeapon;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import org.slf4j.Logger;
@@ -95,6 +99,7 @@ public class PhantomRocketChargeAttackGoal extends Goal{
         this.rocketCooldown = 0;
         this.isAccelerating = false;
         this.acceleratedTicks = 0;
+        this.phantom.stopUsingItem();
         this.phantom.setTarget(null);
         this.phantom.attackPhase = Phantom.AttackPhase.CIRCLE;
     }
@@ -112,6 +117,7 @@ public class PhantomRocketChargeAttackGoal extends Goal{
                     this.hasUsedRocket = true;
                     this.isAccelerating = true;
                     this.acceleratedTicks = 0;
+                    this.phantom.startUsingItem(InteractionHand.MAIN_HAND);
                 }
             }
 
@@ -136,16 +142,26 @@ public class PhantomRocketChargeAttackGoal extends Goal{
                     this.acceleratedTicks++;
                 } else {
                     this.isAccelerating = false;
+                    this.phantom.stopUsingItem();
                 }
             }
 
             if (this.phantom.getBoundingBox().inflate(0.2F).intersects(livingentity.getBoundingBox())) {
-                this.phantom.doHurtTarget(getServerLevel(this.phantom.level()), livingentity);
+//                this.phantom.doHurtTarget(getServerLevel(this.phantom.level()), livingentity);
+                // 手动触发长矛伤害判定，使长矛特殊伤害机制生效
+                ItemStack mainHandItem = this.phantom.getMainHandItem();
+                KineticWeapon kineticWeapon = mainHandItem.get(DataComponents.KINETIC_WEAPON);
+                if (kineticWeapon != null) {
+                    logger.info("this.phantom.getUseItemRemainingTicks(): {}", this.phantom.getUseItemRemainingTicks());
+                    kineticWeapon.damageEntities(mainHandItem, this.phantom.getUseItemRemainingTicks(), this.phantom, EquipmentSlot.MAINHAND);
+                }
+                this.phantom.stopUsingItem();
                 this.phantom.attackPhase = Phantom.AttackPhase.CIRCLE;
                 if (!this.phantom.isSilent()) {
                     this.phantom.level().levelEvent(1039, this.phantom.blockPosition(), 0);
                 }
             } else if (this.phantom.horizontalCollision || this.phantom.hurtTime > 0) {
+                this.phantom.stopUsingItem();
                 this.phantom.attackPhase = Phantom.AttackPhase.CIRCLE;
             }
         }
