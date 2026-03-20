@@ -8,7 +8,6 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EntitySelector;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.animal.feline.Cat;
@@ -18,7 +17,6 @@ import net.minecraft.world.entity.projectile.FireworkRocketEntity;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.component.KineticWeapon;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import org.slf4j.Logger;
@@ -55,12 +53,13 @@ public class PhantomRocketChargeAttackGoal extends Goal{
         if (!this.phantom.getPersistentData().getBoolean(Constants.ENHANCED_PHANTOM_BOOLEAN).orElse(false)){
             return false;
         }
-        return phantom.getMainHandItem().getItem() == Items.NETHERITE_SPEAR && phantom.getOffhandItem().getItem() == Items.FIREWORK_ROCKET;
+//        return (phantom.getMainHandItem().get(DataComponents.KINETIC_WEAPON)!=null) && phantom.getOffhandItem().getItem() == Items.FIREWORK_ROCKET;
+        return phantom.getOffhandItem().getItem() == Items.FIREWORK_ROCKET;
     }
 
     @Override
     public boolean canContinueToUse() {
-        logger.info("PhantomRocketChargeAttackGoal.canContinueToUse?");
+//        logger.info("PhantomRocketChargeAttackGoal.canContinueToUse?");
         LivingEntity livingentity = this.phantom.getTarget();
         if (livingentity == null) {
             return false;
@@ -109,7 +108,6 @@ public class PhantomRocketChargeAttackGoal extends Goal{
         LivingEntity livingentity = this.phantom.getTarget();
         if (livingentity != null) {
             this.phantom.moveTargetPoint = new Vec3(livingentity.getX(), livingentity.getY(0.5), livingentity.getZ());
-
             if (!hasUsedRocket && rocketCooldown > 0) {
                 rocketCooldown--;
                 if (rocketCooldown <= 0 && this.phantom.getOffhandItem().getItem() == Items.FIREWORK_ROCKET) {
@@ -117,7 +115,8 @@ public class PhantomRocketChargeAttackGoal extends Goal{
                     this.hasUsedRocket = true;
                     this.isAccelerating = true;
                     this.acceleratedTicks = 0;
-                    this.phantom.startUsingItem(InteractionHand.MAIN_HAND);
+                    if (this.phantom.getMainHandItem().get(DataComponents.KINETIC_WEAPON) != null)
+                       this.phantom.startUsingItem(InteractionHand.MAIN_HAND);
                 }
             }
 
@@ -147,13 +146,12 @@ public class PhantomRocketChargeAttackGoal extends Goal{
             }
 
             if (this.phantom.getBoundingBox().inflate(0.2F).intersects(livingentity.getBoundingBox())) {
-//                this.phantom.doHurtTarget(getServerLevel(this.phantom.level()), livingentity);
-                // 手动触发长矛伤害判定，使长矛特殊伤害机制生效
-                ItemStack mainHandItem = this.phantom.getMainHandItem();
-                KineticWeapon kineticWeapon = mainHandItem.get(DataComponents.KINETIC_WEAPON);
-                if (kineticWeapon != null) {
-                    logger.info("this.phantom.getUseItemRemainingTicks(): {}", this.phantom.getUseItemRemainingTicks());
-                    kineticWeapon.damageEntities(mainHandItem, this.phantom.getUseItemRemainingTicks(), this.phantom, EquipmentSlot.MAINHAND);
+                if (!this.phantom.level().isClientSide()) {
+                    if (this.phantom.getMainHandItem().get(DataComponents.KINETIC_WEAPON) == null){
+                        this.phantom.doHurtTarget(getServerLevel(this.phantom.level()), livingentity);
+                    } else{
+//                        spear.damageEntities(this.phantom.getMainHandItem(), 72000, this.phantom, EquipmentSlot.MAINHAND);
+                    }
                 }
                 this.phantom.stopUsingItem();
                 this.phantom.attackPhase = Phantom.AttackPhase.CIRCLE;
