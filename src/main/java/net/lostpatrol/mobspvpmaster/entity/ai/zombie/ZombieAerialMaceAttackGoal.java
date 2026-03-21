@@ -2,8 +2,6 @@
 
     import net.lostpatrol.mobspvpmaster.MobsPVPMaster;
     import net.lostpatrol.mobspvpmaster.util.Constants.ArmorLevel;
-    import net.minecraft.core.Direction;
-    import net.minecraft.core.Holder;
     import net.minecraft.core.Registry;
     import net.minecraft.core.particles.ParticleTypes;
     import net.minecraft.core.registries.BuiltInRegistries;
@@ -56,6 +54,7 @@
         private int ticksUntilNextAttack;
 
         private static final int MIN_JUMP_DISTANCE = 4;
+        private static final int MIN_JUMP_DISTANCE_BABY = 2;
         private static final int MAX_JUMP_DISTANCE = 8;
 
         private static final int MAX_JUMP_TICKS = 50;
@@ -74,14 +73,16 @@
 
         @Override
         public boolean canUse() {
-            LivingEntity livingentity = this.zombie.getTarget();
-            if (livingentity == null || !livingentity.isAlive()) {
+            LivingEntity target = this.zombie.getTarget();
+            if (target == null || !target.isAlive() || !this.hasMace() || !this.hasWindCharge()) {
                 return false;
-            } else if (this.zombie.isWithinMeleeAttackRange(livingentity)) {
+            } else if (this.zombie.isWithinMeleeAttackRange(target)) {
                 return false;
-            } else if (!hasMace() || !hasWindCharge()) {
-                return false;
-            } else if (zombie.distanceTo(livingentity)< MIN_JUMP_DISTANCE || zombie.distanceTo(livingentity) > MAX_JUMP_DISTANCE){
+            }
+
+            double dist = zombie.distanceTo(target);
+            boolean isPlayer = target instanceof Player;
+            if (dist > MAX_JUMP_DISTANCE || (isPlayer && dist < getMinJumpDistance())) {
                 return false;
             }
 
@@ -96,21 +97,24 @@
 
         @Override
         public boolean canContinueToUse() {
-            if (isWindJumping)
+            if (this.isWindJumping)
                 return true;
 
-            LivingEntity livingentity = this.zombie.getTarget();
-            if (livingentity == null || !livingentity.isAlive()) {
-                return false;
-            } else if (!hasMace() || !hasWindCharge()) {
-                return false;
-    //        }else if (zombie.distanceTo(livingentity)< MIN_JUMP_DISTANCE || zombie.distanceTo(livingentity) > MAX_JUMP_DISTANCE){
-            } else if (zombie.isWithinMeleeAttackRange(livingentity) || zombie.distanceTo(livingentity) > MAX_JUMP_DISTANCE) {
-                return false;
-            } else if (livingentity instanceof Player player && (player.isSpectator() || player.isCreative())){
+            LivingEntity target = this.zombie.getTarget();
+            if (target == null || !target.isAlive() || !this.hasMace() || !this.hasWindCharge()) {
                 return false;
             }
-            return true;
+
+            double dist = zombie.distanceTo(target);
+            if (dist >= MAX_JUMP_DISTANCE) {
+                return false;
+            }
+            if (target instanceof Player player) {
+                if (player.isSpectator() || player.isCreative() || dist < getMinJumpDistance())
+                    return false;
+            }
+
+            return !zombie.isWithinMeleeAttackRange(target);
         }
 
         @Override
@@ -126,8 +130,8 @@
             this.isWindJumping = false;
             this.ticksSinceJump = 0;
 
-            LivingEntity livingentity = this.zombie.getTarget();
-            if (!EntitySelector.NO_CREATIVE_OR_SPECTATOR.test(livingentity)) {
+            LivingEntity target = this.zombie.getTarget();
+            if (target != null && !EntitySelector.NO_CREATIVE_OR_SPECTATOR.test(target)) {
                 this.zombie.setTarget(null);
             }
             this.zombie.setAggressive(false);
@@ -136,37 +140,42 @@
 
         @Override
         public void tick() {
-            LivingEntity livingentity = this.zombie.getTarget();
-            if (livingentity == null || !livingentity.isAlive()) return;
+            LivingEntity target = this.zombie.getTarget();
+            if (target == null || !target.isAlive()) return;
 
-            double distance = zombie.distanceTo(livingentity);
-            zombie.getLookControl().setLookAt(livingentity, 30.0F, 30.0F);
+            double distance = zombie.distanceTo(target);
+            zombie.getLookControl().setLookAt(target, 30.0F, 30.0F);
 
             if (zombie.onGround() || zombie.isInWater()) {
                 isWindJumping = false;
                 ticksSinceJump += 1;
                 if (ticksSinceJump >= MAX_JUMP_TICKS) {
-                    if (distance >= MIN_JUMP_DISTANCE && distance <= MAX_JUMP_DISTANCE &&
+                    boolean isPlayer = target instanceof Player;
+                    // Be more dangerous if target is not a player
+                    boolean distanceOk = isPlayer ? (distance >= getMinJumpDistance() && distance <= MAX_JUMP_DISTANCE)
+                                                 : (distance <= MAX_JUMP_DISTANCE);
+
+                    if (distanceOk &&
                             zombie.onGround() &&
                             isTimeToAttack() &&
                             zombie.getRandom().nextFloat() < WIND_JUMP_CHANCE) {
 
-                        performWindJump(livingentity);
+                        performWindJump(target);
                     }
                 } else {
-                    zombie.getNavigation().moveTo(livingentity, speedModifier);
+                    zombie.getNavigation().moveTo(target, speedModifier);
                 }
             } else if (isWindJumping) {
                 ticksSinceJump = 0;
                 // min horizontal speed in air
-                moveInAir(livingentity);
+                moveInAir(target);
                 if (canZombieSmashAttack()&&
     //                    distance <= getAttackReach(livingentity) &&
-                        this.isWithinAerialMaceAttackRange(livingentity) &&
+                        this.isWithinAerialMaceAttackRange(target) &&
                         isTimeToAttack() &&
-                        zombie.getSensing().hasLineOfSight(livingentity)) {
+                        zombie.getSensing().hasLineOfSight(target)) {
 
-                    performMaceSmashAttack(livingentity);
+                    performMaceSmashAttack(target);
                 }
             }
             this.ticksUntilNextAttack = Math.max(this.ticksUntilNextAttack - 1, 0);
@@ -309,5 +318,9 @@
                 aabb = zombie.getBoundingBox();
             }
             return aabb.inflate(attackReach, 0.0, attackReach);
+        }
+
+        private double getMinJumpDistance(){
+            return this.zombie.isBaby() ?  MIN_JUMP_DISTANCE_BABY : MIN_JUMP_DISTANCE;
         }
     }
