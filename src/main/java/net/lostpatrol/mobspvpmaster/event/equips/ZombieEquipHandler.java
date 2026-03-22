@@ -1,11 +1,8 @@
 package net.lostpatrol.mobspvpmaster.event.equips;
 
-import net.lostpatrol.mobspvpmaster.MobsPVPMaster;
-import net.lostpatrol.mobspvpmaster.entity.ai.zombie.ZombieAerialMaceAttackGoal;
 import net.lostpatrol.mobspvpmaster.util.Constants.ArmorLevel;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -16,43 +13,57 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.Enchantments;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static net.lostpatrol.mobspvpmaster.util.Constants.ENHANCED_ZOMBIE_BOOLEAN;
 
-@EventBusSubscriber(modid = MobsPVPMaster.MODID)
-public class ZombieEquipmentHandler {
-    private static final float EQUIP_MACE_CHANCE = 0.1f;
+public class ZombieEquipHandler {
+    private static final float TACTICAL_ZOMBIE_CHANCE = 0.1f;
     private static final float EQUIP_IRON_CHANCE = 0.4f;
     private static final float EQUIP_DIAMOND_CHANCE = 0.3f;
     private static final float EQUIP_NETHERITE_CHANCE = 0.1f;
 
-    public static final List<ResourceKey<Enchantment>> IRON_WEAPON_COMMON_ENCHANTMENTS = List.of(Enchantments.UNBREAKING, Enchantments.BANE_OF_ARTHROPODS, Enchantments.SMITE);
-    public static final List<ResourceKey<Enchantment>> DIAMOND_WEAPON_COMMON_ENCHANTMENTS = List.of(Enchantments.UNBREAKING, Enchantments.SMITE);
-    public static final List<ResourceKey<Enchantment>> NETHERITE_WEAPON_COMMON_ENCHANTMENTS = List.of(Enchantments.UNBREAKING, Enchantments.MENDING);
-    public static final List<ResourceKey<Enchantment>> NETHERITE_MACE_EXTRA_ENCHANTMENTS = List.of(Enchantments.BREACH, Enchantments.DENSITY, Enchantments.WIND_BURST);
-    public static final List<ResourceKey<Enchantment>> IRON_ARMOR_COMMON_ENCHANTMENTS = List.of(Enchantments.BLAST_PROTECTION, Enchantments.FIRE_PROTECTION, Enchantments.PROJECTILE_PROTECTION, Enchantments.UNBREAKING);
-    public static final List<ResourceKey<Enchantment>> DIAMOND_ARMOR_COMMON_ENCHANTMENTS = List.of(Enchantments.BLAST_PROTECTION, Enchantments.FIRE_PROTECTION, Enchantments.PROJECTILE_PROTECTION, Enchantments.PROTECTION, Enchantments.UNBREAKING);
-    public static final List<ResourceKey<Enchantment>> NETHERITE_ARMOR_COMMON_ENCHANTMENTS = List.of(Enchantments.PROTECTION, Enchantments.UNBREAKING, Enchantments.MENDING);
+    public static final List<ResourceKey<Enchantment>> IRON_MACE_ENCHANTMENTS = List.of(
+            Enchantments.UNBREAKING,
+            Enchantments.BANE_OF_ARTHROPODS,
+            Enchantments.SMITE
+    );
+    public static final List<ResourceKey<Enchantment>> DIAMOND_MACE_ENCHANTMENTS = List.of(
+            Enchantments.UNBREAKING,
+            Enchantments.SMITE
+    );
+    public static final List<ResourceKey<Enchantment>> NETHERITE_MACE_COMMON_ENCHANTMENTS = List.of(
+            Enchantments.UNBREAKING,
+            Enchantments.MENDING
+    );
+    public static final List<ResourceKey<Enchantment>> NETHERITE_MACE_EXTRA_ENCHANTMENTS = List.of(
+            Enchantments.BREACH,
+            Enchantments.DENSITY,
+            Enchantments.WIND_BURST
+    );
+    public static final List<ResourceKey<Enchantment>> IRON_ARMOR_ENCHANTMENTS = List.of(
+            Enchantments.BLAST_PROTECTION,
+            Enchantments.FIRE_PROTECTION,
+            Enchantments.PROJECTILE_PROTECTION,
+            Enchantments.UNBREAKING
+    );
+    public static final List<ResourceKey<Enchantment>> DIAMOND_ARMOR_ENCHANTMENTS = List.of(
+            Enchantments.BLAST_PROTECTION,
+            Enchantments.FIRE_PROTECTION,
+            Enchantments.PROJECTILE_PROTECTION,
+            Enchantments.PROTECTION,
+            Enchantments.UNBREAKING
+    );
+    public static final List<ResourceKey<Enchantment>> NETHERITE_ARMOR_ENCHANTMENTS = List.of(
+            Enchantments.PROTECTION,
+            Enchantments.UNBREAKING,
+            Enchantments.MENDING
+    );
 
-    @SubscribeEvent
-    public static void onEntityJoinLevel(EntityJoinLevelEvent event) {
-        if (event.getLevel().isClientSide()) return;
-        if (!(event.getEntity() instanceof Zombie zombie)) return;
-        if (zombie.isBaby() && zombie.getVehicle() instanceof Chicken) return;
-
-        if (zombie.getPersistentData().contains(ENHANCED_ZOMBIE_BOOLEAN)) {
-            if (zombie.getPersistentData().getBoolean(ENHANCED_ZOMBIE_BOOLEAN).orElse(false)) {
-                if (!hasGoal(zombie)) {
-                    ArmorLevel armorLevel = deduceArmorLevel(zombie);
-                    zombie.goalSelector.addGoal(1, new ZombieAerialMaceAttackGoal(zombie, armorLevel, 1.1, false));
-                }
-            }
+    public static void setupEquipmentIfNeeded(Zombie zombie, Registry<Enchantment> enchantmentRegistry) {
+        if (isExcludedZombie(zombie) || zombie.getPersistentData().contains(ENHANCED_ZOMBIE_BOOLEAN)) {
             return;
         }
 
@@ -61,48 +72,42 @@ public class ZombieEquipmentHandler {
             return;
         }
 
-        RandomSource random = zombie.getRandom();
-        if (random.nextFloat() < EQUIP_MACE_CHANCE) {
-            setupTacticalZombie(zombie, event.getLevel().registryAccess().lookupOrThrow(Registries.ENCHANTMENT));
+        if (zombie.getRandom().nextFloat() < TACTICAL_ZOMBIE_CHANCE) {
+            setupTacticalZombie(zombie, enchantmentRegistry);
         } else {
             zombie.getPersistentData().putBoolean(ENHANCED_ZOMBIE_BOOLEAN, false);
         }
     }
 
+    public static boolean isEnhancedZombie(Zombie zombie) {
+        return zombie.getPersistentData().getBoolean(ENHANCED_ZOMBIE_BOOLEAN).orElse(false);
+    }
+
+    public static boolean isExcludedZombie(Zombie zombie) {
+        return zombie.isBaby() && zombie.getVehicle() instanceof Chicken;
+    }
+
     private static void setupTacticalZombie(Zombie zombie, Registry<Enchantment> enchantmentRegistry) {
         RandomSource random = zombie.getRandom();
         zombie.setLeftHanded(false);
-        ArmorLevel armorLevel = ArmorLevel.IRON;
 
         if (random.nextFloat() < EQUIP_NETHERITE_CHANCE) {
-            createEnchantedWeapon(zombie, ArmorLevel.NETHERITE, enchantmentRegistry);
+            createWindCharge(zombie, ArmorLevel.NETHERITE);
+            createEnchantedMace(zombie, ArmorLevel.NETHERITE, enchantmentRegistry);
             createEnchantedArmor(zombie, ArmorLevel.NETHERITE, enchantmentRegistry);
-            armorLevel = ArmorLevel.NETHERITE;
         } else if (random.nextFloat() < EQUIP_DIAMOND_CHANCE) {
-            createEnchantedWeapon(zombie, ArmorLevel.DIAMOND, enchantmentRegistry);
+            createWindCharge(zombie, ArmorLevel.DIAMOND);
+            createEnchantedMace(zombie, ArmorLevel.DIAMOND, enchantmentRegistry);
             createEnchantedArmor(zombie, ArmorLevel.DIAMOND, enchantmentRegistry);
-            armorLevel = ArmorLevel.DIAMOND;
         } else {
-            createEnchantedWeapon(zombie, ArmorLevel.IRON, enchantmentRegistry);
+            createWindCharge(zombie, ArmorLevel.IRON);
+            createEnchantedMace(zombie, ArmorLevel.IRON, enchantmentRegistry);
             if (random.nextFloat() < EQUIP_IRON_CHANCE) {
                 createEnchantedArmor(zombie, ArmorLevel.IRON, enchantmentRegistry);
             }
         }
 
         zombie.getPersistentData().putBoolean(ENHANCED_ZOMBIE_BOOLEAN, true);
-        zombie.goalSelector.addGoal(1, new ZombieAerialMaceAttackGoal(zombie, armorLevel, 1.1, false));
-    }
-
-    private static ArmorLevel deduceArmorLevel(Zombie zombie) {
-        Item helmet = zombie.getItemBySlot(EquipmentSlot.HEAD).getItem();
-        if (helmet == Items.NETHERITE_HELMET) return ArmorLevel.NETHERITE;
-        if (helmet == Items.DIAMOND_HELMET) return ArmorLevel.DIAMOND;
-        return ArmorLevel.IRON;
-    }
-
-    private static boolean hasGoal(Zombie zombie) {
-        return zombie.goalSelector.getAvailableGoals().stream()
-                .anyMatch(wrappedGoal -> wrappedGoal.getGoal() instanceof ZombieAerialMaceAttackGoal);
     }
 
     private static boolean isEquipmentEmpty(Zombie zombie) {
@@ -112,25 +117,32 @@ public class ZombieEquipmentHandler {
         return true;
     }
 
-    public static void createEnchantedWeapon(Zombie zombie, ArmorLevel armorLevel, Registry<Enchantment> enchantmentRegistry) {
+    public static void createEnchantedMace(Zombie zombie, ArmorLevel armorLevel, Registry<Enchantment> enchantmentRegistry) {
         RandomSource random = zombie.getRandom();
         if (armorLevel == ArmorLevel.IRON){
             zombie.setItemSlot(EquipmentSlot.MAINHAND, createEnchantedSingleWeapon(Items.MACE, ArmorLevel.IRON, random, 2, 2, enchantmentRegistry));
-            zombie.setItemSlot(EquipmentSlot.OFFHAND, new ItemStack(Items.WIND_CHARGE, 2));
         } else if (armorLevel == ArmorLevel.DIAMOND){
             zombie.setItemSlot(EquipmentSlot.MAINHAND, createEnchantedSingleWeapon(Items.MACE, ArmorLevel.DIAMOND, random, 3, 3, enchantmentRegistry));
-            zombie.setItemSlot(EquipmentSlot.OFFHAND, new ItemStack(Items.WIND_CHARGE, 5));
         } else if (armorLevel == ArmorLevel.NETHERITE){
             zombie.setItemSlot(EquipmentSlot.MAINHAND, createEnchantedSingleWeapon(Items.MACE, ArmorLevel.NETHERITE, random, 4, 4, enchantmentRegistry));
+        }
+    }
+
+    public static void createWindCharge(Zombie zombie, ArmorLevel armorLevel){
+        if (armorLevel == ArmorLevel.IRON){
+            zombie.setItemSlot(EquipmentSlot.OFFHAND, new ItemStack(Items.WIND_CHARGE, 2));
+        } else if (armorLevel == ArmorLevel.DIAMOND){
+            zombie.setItemSlot(EquipmentSlot.OFFHAND, new ItemStack(Items.WIND_CHARGE, 5));
+        } else if (armorLevel == ArmorLevel.NETHERITE){
             zombie.setItemSlot(EquipmentSlot.OFFHAND, new ItemStack(Items.WIND_CHARGE, 8));
         }
     }
 
     public static ItemStack createEnchantedSingleWeapon(Item item, ArmorLevel armorLevel, RandomSource random, int maxLevel, int totalLevel, Registry<Enchantment> enchantmentRegistry) {
         List<ResourceKey<Enchantment>> availableEnchantments = switch (armorLevel){
-            case IRON -> new ArrayList<>(IRON_WEAPON_COMMON_ENCHANTMENTS);
-            case DIAMOND -> new ArrayList<>(DIAMOND_WEAPON_COMMON_ENCHANTMENTS);
-            case NETHERITE -> new ArrayList<>(NETHERITE_WEAPON_COMMON_ENCHANTMENTS);
+            case IRON -> new ArrayList<>(IRON_MACE_ENCHANTMENTS);
+            case DIAMOND -> new ArrayList<>(DIAMOND_MACE_ENCHANTMENTS);
+            case NETHERITE -> new ArrayList<>(NETHERITE_MACE_COMMON_ENCHANTMENTS);
         };
         ItemStack enchantedItem = randomEnchant(item, random, maxLevel, totalLevel, availableEnchantments, enchantmentRegistry);
         if (armorLevel == ArmorLevel.NETHERITE){
@@ -161,9 +173,9 @@ public class ZombieEquipmentHandler {
 
     public static ItemStack createEnchantedSingleArmor(Item item, ArmorLevel armorLevel, RandomSource random, int maxLevel, int totalLevel, Registry<Enchantment> enchantmentRegistry){
         List<ResourceKey<Enchantment>> availableEnchantments = switch (armorLevel) {
-            case IRON -> new ArrayList<>(IRON_ARMOR_COMMON_ENCHANTMENTS);
-            case DIAMOND -> new ArrayList<>(DIAMOND_ARMOR_COMMON_ENCHANTMENTS);
-            case NETHERITE -> new ArrayList<>(NETHERITE_ARMOR_COMMON_ENCHANTMENTS);
+            case IRON -> new ArrayList<>(IRON_ARMOR_ENCHANTMENTS);
+            case DIAMOND -> new ArrayList<>(DIAMOND_ARMOR_ENCHANTMENTS);
+            case NETHERITE -> new ArrayList<>(NETHERITE_ARMOR_ENCHANTMENTS);
         };
         ItemStack enchantedItem = randomEnchant(item, random, maxLevel, totalLevel, availableEnchantments, enchantmentRegistry);
         if (item == Items.IRON_BOOTS) enchantedItem.enchant(enchantmentRegistry.getOrThrow(Enchantments.FEATHER_FALLING), 2);

@@ -15,17 +15,19 @@ import net.neoforged.neoforge.event.entity.living.LivingDropsEvent;
 
 @EventBusSubscriber(modid = MobsPVPMaster.MODID)
 public class ZombieDropsHandler {
-    // Enhanced Zombie Should Drop More
     @SubscribeEvent
     public static void onEnhancedZombieDrops(LivingDropsEvent event) {
-        if (event.getEntity().level().isClientSide())
+        if (event.getEntity().level().isClientSide()) {
             return;
+        }
 
-        if (!(event.getEntity() instanceof Zombie zombie))
+        if (!(event.getEntity() instanceof Zombie zombie)) {
             return;
+        }
 
-        if(! zombie.getPersistentData().getBoolean(Constants.ENHANCED_ZOMBIE_BOOLEAN).orElse(false))
+        if (!zombie.getPersistentData().getBoolean(Constants.ENHANCED_ZOMBIE_BOOLEAN).orElse(false)) {
             return;
+        }
 
         RandomSource random = zombie.getRandom();
 
@@ -37,21 +39,22 @@ public class ZombieDropsHandler {
         }
 
         // Mace drop
-        if (!Util.isItemInDrops(event.getDrops(), Items.MACE) && random.nextFloat() < 0.4f) {
-            ItemStack maceDrop = zombie.getItemBySlot(EquipmentSlot.MAINHAND).copy();
-            event.getDrops().add(new ItemEntity(zombie.level(), zombie.getX(), zombie.getY(), zombie.getZ(), Util.applyRandomDamage(maceDrop, random, 0.2F, 0.65F)));
+        ItemStack mainHand = zombie.getItemBySlot(EquipmentSlot.MAINHAND).copy();
+        if (!mainHand.isEmpty() && !Util.isItemInDrops(event.getDrops(), mainHand.getItem()) && random.nextFloat() < 0.4f) {
+            ItemStack mace = Util.applyRandomDamage(mainHand, random, 0.2F, 0.65F);
+            event.getDrops().add(new ItemEntity(zombie.level(), zombie.getX(), zombie.getY(), zombie.getZ(), mace));
         }
 
         // Armors drop
         for (EquipmentSlot slot : new EquipmentSlot[]{EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET}) {
-            ItemStack armorStack = zombie.getItemBySlot(slot);
-            if (armorStack.isEmpty())
+            ItemStack armor = zombie.getItemBySlot(slot);
+            if (armor.isEmpty() ||Util.isItemInDrops(event.getDrops(), armor.getItem())) {
                 continue;
-            if (Util.isItemInDrops(event.getDrops(), armorStack.getItem()))
-                continue;
+            }
+
             if (random.nextFloat() < 0.2f) {
-                ItemStack armorDrop = armorStack.copy();
-                event.getDrops().add(new ItemEntity(zombie.level(), zombie.getX(), zombie.getY(), zombie.getZ(), Util.applyRandomDamage(armorDrop, random, 0.2F, 0.65F)));
+                ItemStack drop = Util.applyRandomDamage(armor.copy(), random, 0.2f, 0.7f);
+                event.getDrops().add(new ItemEntity(zombie.level(), zombie.getX(), zombie.getY(), zombie.getZ(), drop));
             }
         }
     }
