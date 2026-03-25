@@ -46,8 +46,7 @@ public class SkeletonBlockDefenseGoal extends Goal {
     private BlockPos targetBasePos;
     private int placementInterval;
     private Block defenseBlock = Blocks.COBBLESTONE;
-    
-    // 用于恢复副手物品，防止吃掉原本的装备（如盾牌）
+
     private ItemStack oldOffhandItem = ItemStack.EMPTY;
 
     public SkeletonBlockDefenseGoal(Skeleton skeleton) {
@@ -88,21 +87,18 @@ public class SkeletonBlockDefenseGoal extends Goal {
     @Override
     public void start() {
         if (this.target != null) {
-            // 1. 立即停止当前导航
+            // 好像没用
             this.skeleton.getNavigation().stop();
             this.defenseBlock = resolveDefenseBlock();
-            
-            // 2. 备份并显示副手方块
+
             this.oldOffhandItem = this.skeleton.getItemBySlot(EquipmentSlot.OFFHAND).copy();
             updateOffhandDisplay();
 
-            // 3. 计算位置
             Vec3 skeletonPos = this.skeleton.position();
             Vec3 targetPos = this.target.position();
             Vec3 toTarget = new Vec3(targetPos.x - skeletonPos.x, 0, targetPos.z - skeletonPos.z).normalize();
             this.targetBasePos = BlockPos.containing(skeletonPos.x + toTarget.x * 1.5, skeletonPos.y, skeletonPos.z + toTarget.z * 1.5);
 
-            // 4. 根据难度计算间隔
             int difficulty = this.skeleton.level().getDifficulty().getId();
             this.placementInterval = Math.max(1, 5 - difficulty);
 
@@ -114,7 +110,7 @@ public class SkeletonBlockDefenseGoal extends Goal {
 
     @Override
     public void tick() {
-        // 1. 彻底冻结移动：不仅停止导航，还要重置侧向平移并清除水平动量
+        //还是没用好像
         this.skeleton.getNavigation().stop();
         this.skeleton.getMoveControl().strafe(0.0F, 0.0F);
         Vec3 delta = this.skeleton.getDeltaMovement();
@@ -141,17 +137,13 @@ public class SkeletonBlockDefenseGoal extends Goal {
         if (blocks <= 0) return;
 
         if (tryPlaceBlock(this.skeleton.level(), pos)) {
-            // 1. 挥动副手
             this.skeleton.swing(InteractionHand.OFF_HAND);
 
-            // 2. 更新逻辑数据
             int remaining = Math.max(0, blocks - 1);
             this.skeleton.getPersistentData().putInt(Constants.SKELETON_BLOCK_COUNT, remaining);
-            
-            // 3. 更新视觉副手
+
             updateOffhandDisplay();
 
-            // 4. 效果
             Level level = this.skeleton.level();
             SoundType soundType = this.defenseBlock.defaultBlockState().getSoundType();
             level.playSound(null, pos, soundType.getPlaceSound(), SoundSource.BLOCKS, 1.0F, 0.8F);
@@ -198,7 +190,6 @@ public class SkeletonBlockDefenseGoal extends Goal {
 
     @Override
     public void stop() {
-        // 恢复小白原本的副手物品
         this.skeleton.setItemSlot(EquipmentSlot.OFFHAND, this.oldOffhandItem);
         this.actionTicks = -1;
     }
