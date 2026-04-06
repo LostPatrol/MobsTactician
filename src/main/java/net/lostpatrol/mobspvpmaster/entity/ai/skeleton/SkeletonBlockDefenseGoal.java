@@ -2,6 +2,7 @@ package net.lostpatrol.mobspvpmaster.entity.ai.skeleton;
 
 import net.lostpatrol.mobspvpmaster.MobsPVPMaster;
 import net.lostpatrol.mobspvpmaster.util.Constants;
+import net.lostpatrol.mobspvpmaster.util.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.particles.BlockParticleOption;
@@ -48,6 +49,7 @@ public class SkeletonBlockDefenseGoal extends Goal {
     private Block defenseBlock = Blocks.COBBLESTONE;
 
     private ItemStack oldOffhandItem = ItemStack.EMPTY;
+    private float oldOffhandDropChance = 0.0F;
 
     public SkeletonBlockDefenseGoal(Skeleton skeleton) {
         this.skeleton = skeleton;
@@ -75,9 +77,7 @@ public class SkeletonBlockDefenseGoal extends Goal {
     }
 
     private boolean isPlayerAimingAtSkeleton(Player player) {
-        Vec3 lookVec = player.getViewVector(1.0F);
-        Vec3 toSkeleton = this.skeleton.getEyePosition().subtract(player.getEyePosition()).normalize();
-        return lookVec.dot(toSkeleton) > 0.98;
+        return Util.isPlayerAimingAtEntity(player, this.skeleton, 0.98D, false);
     }
 
     private boolean isPlayerAboutToShoot(Player player) {
@@ -92,6 +92,7 @@ public class SkeletonBlockDefenseGoal extends Goal {
             this.defenseBlock = resolveDefenseBlock();
 
             this.oldOffhandItem = this.skeleton.getItemBySlot(EquipmentSlot.OFFHAND).copy();
+            this.oldOffhandDropChance = this.skeleton.getDropChances().byEquipment(EquipmentSlot.OFFHAND);
             updateOffhandDisplay();
 
             Vec3 skeletonPos = this.skeleton.position();
@@ -191,6 +192,7 @@ public class SkeletonBlockDefenseGoal extends Goal {
     @Override
     public void stop() {
         this.skeleton.setItemSlot(EquipmentSlot.OFFHAND, this.oldOffhandItem);
+        this.skeleton.setDropChance(EquipmentSlot.OFFHAND, this.oldOffhandDropChance);
         this.actionTicks = -1;
     }
 

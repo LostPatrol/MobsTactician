@@ -111,7 +111,7 @@ public final class SkeletonWeaponSwitchController {
         skeleton.getPersistentData().putInt(Constants.SKELETON_LAST_HURT_BY_MOB_TIMESTAMP, currentHurtTimestamp);
 
         LivingEntity attacker = skeleton.getLastHurtByMob();
-        if (!(attacker instanceof Player) || !attacker.isAlive() || skeleton.distanceToSqr(attacker) > COMBO_MAX_DISTANCE_SQR) {
+        if (attacker != null && (!attacker.isAlive() || skeleton.distanceToSqr(attacker) > COMBO_MAX_DISTANCE_SQR)) {
             skeleton.getPersistentData().putInt(Constants.SKELETON_RECENT_HIT_STREAK, 0);
             return;
         }
@@ -147,7 +147,7 @@ public final class SkeletonWeaponSwitchController {
 
     /** Activate ranged tactic when sword phase exceeds timeout without hitting current target. */
     private static boolean shouldActivateRangedTacticWhenMeleeNoHit(Skeleton skeleton, LivingEntity target, long gameTime) {
-        if (!(target instanceof Player) || !isMeleeWeapon(skeleton.getMainHandItem())) {
+        if (!isMeleeWeapon(skeleton.getMainHandItem())) {
             resetMeleeNoHitTracking(skeleton);
             return false;
         }

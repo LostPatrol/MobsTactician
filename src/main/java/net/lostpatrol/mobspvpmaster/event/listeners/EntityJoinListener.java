@@ -4,10 +4,12 @@ import net.lostpatrol.mobspvpmaster.MobsPVPMaster;
 import net.lostpatrol.mobspvpmaster.event.equips.PhantomEquipHandler;
 import net.lostpatrol.mobspvpmaster.event.equips.SkeletonEquipHandler;
 import net.lostpatrol.mobspvpmaster.event.equips.ZombieEquipHandler;
+import net.lostpatrol.mobspvpmaster.event.goals.CreeperGoalHandler;
 import net.lostpatrol.mobspvpmaster.event.goals.PhantomGoalHandler;
 import net.lostpatrol.mobspvpmaster.event.goals.SkeletonGoalHandler;
 import net.lostpatrol.mobspvpmaster.event.goals.ZombieGoalHandler;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.entity.monster.Phantom;
 import net.minecraft.world.entity.monster.skeleton.Skeleton;
 import net.minecraft.world.entity.monster.zombie.Zombie;
@@ -38,6 +40,11 @@ public class EntityJoinListener {
         if (event.getEntity() instanceof Phantom phantom) {
             PhantomEquipHandler.setupEquipmentIfNeeded(phantom, event.getLevel().getDifficulty().ordinal());
             PhantomGoalHandler.ensureGoals(phantom);
+            return;
+        }
+
+        if (event.getEntity() instanceof Creeper creeper) {
+            CreeperGoalHandler.ensureGoals(creeper);
         }
     }
 }

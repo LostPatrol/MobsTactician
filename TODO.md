@@ -15,7 +15,9 @@
 - [x] 小白若在拿剑的情况下被combo则会切换弓
 - [x] 小白在长时间追不上玩家的时候会切远程
 - [ ] 僵尸在被连击时会触发特殊战术：会尝试直接发动风弹重锤攻击
-- [ ] creeper会预判爆炸
+- [x] creeper摔死时会爆炸（没有攻击目标时不会触发）
+- [x] creeper会预判
+- [ ] creeper会捏瞬爆
 - [ ] 大幅加强铁傀儡
 - [ ] 
-- [ ] SkeletonBlockDefenseGoal.stop() 需要恢复副手掉落率（当前仅恢复副手物品）
+- [x] SkeletonBlockDefenseGoal.stop() 需要恢复副手掉落率（当前仅恢复副手物品）
