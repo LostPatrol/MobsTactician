@@ -19,5 +19,5 @@
 - [x] creeper会预判
 - [ ] creeper会捏瞬爆
 - [ ] 大幅加强铁傀儡
-- [ ] 
+- [x] 改名MobsTactician
 - [x] SkeletonBlockDefenseGoal.stop() 需要恢复副手掉落率（当前仅恢复副手物品）

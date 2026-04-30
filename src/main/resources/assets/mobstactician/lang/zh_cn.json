@@ -1,0 +1,13 @@
+{
+  "itemGroup.mobstactician": "Example Mod Tab",
+  "block.mobstactician.example_block": "Example Block",
+  "item.mobstactician.example_item": "Example Item",
+
+  "mobstactician.configuration.title": "Example Mod Configs",
+  "mobstactician.configuration.section.mobstactician.common.toml": "Example Mod Configs",
+  "mobstactician.configuration.section.mobstactician.common.toml.title": "Example Mod Configs",
+  "mobstactician.configuration.items": "Item List",
+  "mobstactician.configuration.logDirtBlock": "Log Dirt Block",
+  "mobstactician.configuration.magicNumberIntroduction": "Magic Number Text",
+  "mobstactician.configuration.magicNumber": "Magic Number"
+}
