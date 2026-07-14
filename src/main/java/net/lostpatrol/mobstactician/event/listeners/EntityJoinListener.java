@@ -7,10 +7,12 @@ import net.lostpatrol.mobstactician.event.equips.ZombieEquipHandler;
 import net.lostpatrol.mobstactician.event.goals.CreeperGoalHandler;
 import net.lostpatrol.mobstactician.event.goals.PhantomGoalHandler;
 import net.lostpatrol.mobstactician.event.goals.SkeletonGoalHandler;
+import net.lostpatrol.mobstactician.event.goals.WitchGoalHandler;
 import net.lostpatrol.mobstactician.event.goals.ZombieGoalHandler;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.entity.monster.Phantom;
+import net.minecraft.world.entity.monster.Witch;
 import net.minecraft.world.entity.monster.skeleton.Skeleton;
 import net.minecraft.world.entity.monster.zombie.Zombie;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -45,6 +47,11 @@ public class EntityJoinListener {
 
         if (event.getEntity() instanceof Creeper creeper) {
             CreeperGoalHandler.ensureGoals(creeper);
+            return;
+        }
+
+        if (event.getEntity() instanceof Witch witch) {
+            WitchGoalHandler.ensureGoals(witch);
         }
     }
 }
