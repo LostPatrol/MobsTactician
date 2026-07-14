@@ -7,7 +7,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
 public class PhantomEquipHandler {
-    private static final float ENHANCED_PHANTOM_CHANCE = 0.9f;
+    private static final float ENHANCED_PHANTOM_CHANCE = 0.1f;
 
     public static void setupEquipmentIfNeeded(Phantom phantom, int difficulty) {
         if (phantom.getPersistentData().contains(Constants.ENHANCED_PHANTOM_BOOLEAN)) {

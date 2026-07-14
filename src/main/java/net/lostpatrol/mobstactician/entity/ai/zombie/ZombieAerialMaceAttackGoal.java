@@ -141,7 +141,10 @@
         @Override
         public void tick() {
             LivingEntity target = this.zombie.getTarget();
-            if (target == null || !target.isAlive()) return;
+            if (target == null || !target.isAlive()){
+                isWindJumping = false;
+                return;
+            }
 
             double distance = zombie.distanceTo(target);
             zombie.getLookControl().setLookAt(target, 30.0F, 30.0F);

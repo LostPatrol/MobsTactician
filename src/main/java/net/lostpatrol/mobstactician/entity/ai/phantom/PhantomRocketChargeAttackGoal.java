@@ -50,6 +50,9 @@ public class PhantomRocketChargeAttackGoal extends Goal{
         if (this.phantom.getTarget() == null || this.phantom.attackPhase != Phantom.AttackPhase.SWOOP) {
             return false;
         }
+        if (this.phantom.isVehicle()) {
+            return false;
+        }
         if (!this.phantom.getPersistentData().getBoolean(Constants.ENHANCED_PHANTOM_BOOLEAN).orElse(false)){
             return false;
         }
@@ -150,6 +153,7 @@ public class PhantomRocketChargeAttackGoal extends Goal{
                     if (this.phantom.getMainHandItem().get(DataComponents.KINETIC_WEAPON) == null){
                         this.phantom.doHurtTarget(getServerLevel(this.phantom.level()), livingentity);
                     } else{
+                        // Here spear will damage entities automatically when it is being used. So we do nothing
 //                        spear.damageEntities(this.phantom.getMainHandItem(), 72000, this.phantom, EquipmentSlot.MAINHAND);
                     }
                 }

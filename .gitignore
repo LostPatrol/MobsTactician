@@ -25,3 +25,11 @@ runs
 run-data
 
 repo
+
+.git
+codex
+grok
+agents
+.agents
+AGENTS.md
+TODO.md

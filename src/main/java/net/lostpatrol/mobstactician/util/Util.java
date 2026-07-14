@@ -6,6 +6,7 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.Collection;
@@ -45,5 +46,21 @@ public class Util {
 
         Vec3 look = player.getViewVector(1.0F).normalize();
         return look.dot(toTarget.normalize()) >= minAimDot;
+    }
+
+    public static boolean isBlockingWithShieldToward(Player player, LivingEntity threat) {
+        ItemStack blockingItem = player.getItemBlockingWith();
+        if (blockingItem == null || !blockingItem.is(Items.SHIELD)) {
+            return false;
+        }
+
+        Vec3 toThreat = threat.position().subtract(player.position());
+        Vec3 horizontalDirection = new Vec3(toThreat.x, 0.0D, toThreat.z);
+        if (horizontalDirection.lengthSqr() < 1.0E-6D) {
+            return true;
+        }
+
+        Vec3 horizontalFacing = Vec3.directionFromRotation(0.0F, player.getYHeadRot());
+        return horizontalFacing.dot(horizontalDirection.normalize()) >= 0.0D;
     }
 }

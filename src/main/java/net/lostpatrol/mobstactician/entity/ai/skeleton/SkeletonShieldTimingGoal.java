@@ -1,6 +1,7 @@
 package net.lostpatrol.mobstactician.entity.ai.skeleton;
 
 import java.util.EnumSet;
+import net.lostpatrol.mobstactician.util.Util;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.goal.Goal;
@@ -8,8 +9,6 @@ import net.minecraft.world.entity.monster.skeleton.Skeleton;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.item.BowItem;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 
 /**
  * Bow goal with timing hold logic:
@@ -150,11 +149,6 @@ public class SkeletonShieldTimingGoal extends Goal {
     }
 
     private boolean shouldHoldShot(LivingEntity target) {
-        if (!(target instanceof Player player) || !player.isBlocking()) {
-            return false;
-        }
-
-        ItemStack blockingItem = player.getItemBlockingWith();
-        return blockingItem != null && blockingItem.is(Items.SHIELD);
+        return target instanceof Player player && Util.isBlockingWithShieldToward(player, this.skeleton);
     }
 }

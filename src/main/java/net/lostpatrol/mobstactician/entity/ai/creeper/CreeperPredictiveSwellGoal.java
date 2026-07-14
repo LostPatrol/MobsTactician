@@ -3,6 +3,7 @@ package net.lostpatrol.mobstactician.entity.ai.creeper;
 import net.lostpatrol.mobstactician.MobsTactician;
 import net.lostpatrol.mobstactician.util.Util;
 import net.minecraft.tags.ItemTags;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -15,8 +16,6 @@ import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
-import java.util.EnumSet;
-
 public class CreeperPredictiveSwellGoal extends Goal {
     private static final double VANILLA_SWELL_RANGE = 3.0D;
     private static final double VANILLA_SWELL_RANGE_SQR = VANILLA_SWELL_RANGE * VANILLA_SWELL_RANGE;
@@ -28,6 +27,10 @@ public class CreeperPredictiveSwellGoal extends Goal {
     private static final double MIN_APPROACH_SPEED = 0.012D;
     private static final double MIN_APPROACH_COS = 0.8660254037844386D; // cos(30°)
     private static final double DISTANCE_BUFFER = 1D;
+    private static final double FEINT_LOWER_MIN_RATIO = 0.35D;
+    private static final double FEINT_LOWER_MAX_RATIO = 0.60D;
+    private static final double FEINT_UPPER_MIN_RATIO = 0.70D;
+    private static final double FEINT_UPPER_MAX_RATIO = 0.90D;
 
 
     public static final Logger logger = MobsTactician.LOGGER;
@@ -38,10 +41,12 @@ public class CreeperPredictiveSwellGoal extends Goal {
     private @Nullable Vec3 lastSampledPlayerPos;
     private Vec3 cachedPlayerVelocity = Vec3.ZERO;
     private long lastVelocitySampleTick = Long.MIN_VALUE;
+    private boolean shieldFeinting;
+    private int feintLowerSwell;
+    private int feintUpperSwell;
 
     public CreeperPredictiveSwellGoal(Creeper creeper) {
         this.creeper = creeper;
-        this.setFlags(EnumSet.of(Flag.MOVE));
     }
 
     @Override
@@ -54,8 +59,16 @@ public class CreeperPredictiveSwellGoal extends Goal {
 
     @Override
     public void start() {
-        this.creeper.getNavigation().stop();
         this.target = this.creeper.getTarget();
+    }
+
+    @Override
+    public boolean canContinueToUse() {
+        return (this.shieldFeinting
+                && this.target != null
+                && this.target.isAlive()
+                && this.creeper.getTarget() == this.target)
+                || this.canUse();
     }
 
     @Override
@@ -65,6 +78,7 @@ public class CreeperPredictiveSwellGoal extends Goal {
         this.lastSampledPlayerPos = null;
         this.cachedPlayerVelocity = Vec3.ZERO;
         this.lastVelocitySampleTick = Long.MIN_VALUE;
+        this.resetShieldFeint();
     }
 
     @Override
@@ -74,13 +88,19 @@ public class CreeperPredictiveSwellGoal extends Goal {
 
     @Override
     public void tick() {
-        if (this.target == null) {
+        if (this.target == null || !this.target.isAlive()) {
+            this.resetShieldFeint();
             this.creeper.setSwellDir(-1);
         } else if (this.creeper.distanceTo(this.target) > VANILLA_CONTINUE_RANGE - 2) {
+            this.resetShieldFeint();
             this.creeper.setSwellDir(-1);
         } else if (!this.creeper.getSensing().hasLineOfSight(this.target)) {
+            this.resetShieldFeint();
             this.creeper.setSwellDir(-1);
+        } else if (this.target instanceof Player player && Util.isBlockingWithShieldToward(player, this.creeper)) {
+            this.tickShieldFeint();
         } else {
+            this.resetShieldFeint();
             this.creeper.setSwellDir(1);
         }
 //
@@ -90,6 +110,43 @@ public class CreeperPredictiveSwellGoal extends Goal {
 //        }
 //
 //        this.creeper.setSwellDir(-1);
+    }
+
+    private void tickShieldFeint() {
+        if (!this.shieldFeinting) {
+            this.shieldFeinting = true;
+            this.feintUpperSwell = this.randomSwellTarget(FEINT_UPPER_MIN_RATIO, FEINT_UPPER_MAX_RATIO);
+            if (this.creeper.swell >= this.feintUpperSwell) {
+                this.feintLowerSwell = this.randomSwellTarget(FEINT_LOWER_MIN_RATIO, FEINT_LOWER_MAX_RATIO);
+                this.creeper.setSwellDir(-1);
+            } else {
+                this.creeper.setSwellDir(1);
+            }
+            return;
+        }
+
+        if (this.creeper.getSwellDir() > 0) {
+            if (this.creeper.swell >= this.feintUpperSwell) {
+                this.feintLowerSwell = this.randomSwellTarget(FEINT_LOWER_MIN_RATIO, FEINT_LOWER_MAX_RATIO);
+                this.creeper.setSwellDir(-1);
+            }
+        } else if (this.creeper.swell <= this.feintLowerSwell) {
+            this.feintUpperSwell = this.randomSwellTarget(FEINT_UPPER_MIN_RATIO, FEINT_UPPER_MAX_RATIO);
+            this.creeper.setSwellDir(1);
+        }
+    }
+
+    private int randomSwellTarget(double minRatio, double maxRatio) {
+        int safeMaximum = Math.max(1, this.creeper.maxSwell - 2);
+        int minimum = Mth.clamp((int)Math.ceil(this.creeper.maxSwell * minRatio), 1, safeMaximum);
+        int maximum = Mth.clamp((int)Math.floor(this.creeper.maxSwell * maxRatio), minimum, safeMaximum);
+        return minimum + this.creeper.getRandom().nextInt(maximum - minimum + 1);
+    }
+
+    private void resetShieldFeint() {
+        this.shieldFeinting = false;
+        this.feintLowerSwell = 0;
+        this.feintUpperSwell = 0;
     }
 
     private boolean shouldPredictivelyPrime(LivingEntity livingEntity) {

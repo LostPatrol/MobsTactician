@@ -5,12 +5,12 @@ import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.entity.monster.Creeper;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
+import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 
 @EventBusSubscriber(modid = MobsTactician.MODID)
 public class CreeperFallExplosionListener {
     @SubscribeEvent
-    public static void onLivingIncomingDamage(LivingIncomingDamageEvent event) {
+    public static void onLivingDeath(LivingDeathEvent event) {
         if (event.getEntity().level().isClientSide()) {
             return;
         }
@@ -20,14 +20,6 @@ public class CreeperFallExplosionListener {
         }
 
         if (!event.getSource().is(DamageTypeTags.IS_FALL)) {
-            return;
-        }
-
-        if (creeper.getTarget() == null) {
-            return;
-        }
-
-        if (event.getAmount() < creeper.getHealth()) {
             return;
         }
 
