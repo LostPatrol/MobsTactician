@@ -28,6 +28,11 @@ public class Constants {
     public static final String SKELETON_LAST_HIT_GAME_TICK = MobsTactician.MODID + ".last_hit_game_tick";
     /** Forced-ranged mode expiration tick. */
     public static final String SKELETON_FORCE_RANGED_UNTIL_TICK = MobsTactician.MODID + ".force_ranged_until_tick";
+    public static final String IRON_GOLEM_LAST_SELF_REPAIR_TICK = MobsTactician.MODID + ".iron_golem_last_self_repair_tick";
+    public static final String IRON_GOLEM_FIRST_SELF_REPAIR_DELAY = MobsTactician.MODID + ".iron_golem_first_self_repair_delay";
+    public static final String IRON_GOLEM_SELF_REPAIR_FINISH_TICK = MobsTactician.MODID + ".iron_golem_self_repair_finish_tick";
+    public static final String IRON_GOLEM_SELF_REPAIR_ACTIVE = MobsTactician.MODID + ".iron_golem_self_repair_active";
+    public static final String IRON_GOLEM_SELF_REPAIR_ORIGINAL_DROP_CHANCE = MobsTactician.MODID + ".iron_golem_self_repair_original_drop_chance";
 
     public enum ArmorLevel {
         IRON,

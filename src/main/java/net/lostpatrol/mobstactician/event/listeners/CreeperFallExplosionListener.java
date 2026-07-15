@@ -8,7 +8,10 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 
 @EventBusSubscriber(modid = MobsTactician.MODID)
-public class CreeperFallExplosionListener {
+public final class CreeperFallExplosionListener {
+    private CreeperFallExplosionListener() {
+    }
+
     @SubscribeEvent
     public static void onLivingDeath(LivingDeathEvent event) {
         if (event.getEntity().level().isClientSide()) {

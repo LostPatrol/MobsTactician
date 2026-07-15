@@ -2,6 +2,7 @@ package net.lostpatrol.mobstactician.client.event;
 
 import net.lostpatrol.mobstactician.MobsTactician;
 import net.lostpatrol.mobstactician.client.model.EnhancedPhantomModel;
+import net.lostpatrol.mobstactician.client.render.entity.EnhancedIronGolemRenderer;
 import net.lostpatrol.mobstactician.client.render.entity.EnhancedPhantomRenderer;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.resources.Identifier;
@@ -20,6 +21,7 @@ public class ClientEventHandler {
     @SubscribeEvent
     public static void onRegisterRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(EntityType.PHANTOM, EnhancedPhantomRenderer::new);
+        event.registerEntityRenderer(EntityType.IRON_GOLEM, EnhancedIronGolemRenderer::new);
     }
 
     public static final ModelLayerLocation phantomWeaponLayerLocation = new ModelLayerLocation(
