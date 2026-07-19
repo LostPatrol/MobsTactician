@@ -1,10 +1,12 @@
 package net.lostpatrol.mobstactician.event.equips;
 
+import net.lostpatrol.mobstactician.config.Config;
 import net.lostpatrol.mobstactician.util.Constants.ArmorLevel;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.Difficulty;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.animal.chicken.Chicken;
 import net.minecraft.world.entity.monster.zombie.Zombie;
@@ -20,7 +22,6 @@ import java.util.List;
 import static net.lostpatrol.mobstactician.util.Constants.ENHANCED_ZOMBIE_BOOLEAN;
 
 public class ZombieEquipHandler {
-    private static final float TACTICAL_ZOMBIE_CHANCE = 0.1f;
     private static final float EQUIP_IRON_CHANCE = 0.4f;
     private static final float EQUIP_DIAMOND_CHANCE = 0.3f;
     private static final float EQUIP_NETHERITE_CHANCE = 0.1f;
@@ -38,10 +39,9 @@ public class ZombieEquipHandler {
             Enchantments.UNBREAKING,
             Enchantments.MENDING
     );
-    public static final List<ResourceKey<Enchantment>> NETHERITE_MACE_EXTRA_ENCHANTMENTS = List.of(
+    public static final List<ResourceKey<Enchantment>> NETHERITE_MACE_ATTACK_ENCHANTMENTS = List.of(
             Enchantments.BREACH,
-            Enchantments.DENSITY,
-            Enchantments.WIND_BURST
+            Enchantments.DENSITY
     );
     public static final List<ResourceKey<Enchantment>> IRON_ARMOR_ENCHANTMENTS = List.of(
             Enchantments.BLAST_PROTECTION,
@@ -63,16 +63,17 @@ public class ZombieEquipHandler {
     );
 
     public static void setupEquipmentIfNeeded(Zombie zombie, Registry<Enchantment> enchantmentRegistry) {
-        if (isExcludedZombie(zombie) || zombie.getPersistentData().contains(ENHANCED_ZOMBIE_BOOLEAN)) {
+        if (zombie.getPersistentData().contains(ENHANCED_ZOMBIE_BOOLEAN)
+                || (isExcludedZombie(zombie) && !Config.DEBUG_MODE.get())) {
             return;
         }
 
-        if (!isEquipmentEmpty(zombie)) {
+        if (!Config.DEBUG_MODE.get() && !isEquipmentEmpty(zombie)) {
             zombie.getPersistentData().putBoolean(ENHANCED_ZOMBIE_BOOLEAN, false);
             return;
         }
 
-        if (zombie.getRandom().nextFloat() < TACTICAL_ZOMBIE_CHANCE) {
+        if (Config.roll(Config.ZOMBIE_TACTICAL_CHANCE.get(), zombie.getRandom())) {
             setupTacticalZombie(zombie, enchantmentRegistry);
         } else {
             zombie.getPersistentData().putBoolean(ENHANCED_ZOMBIE_BOOLEAN, false);
@@ -120,11 +121,11 @@ public class ZombieEquipHandler {
     public static void createEnchantedMace(Zombie zombie, ArmorLevel armorLevel, Registry<Enchantment> enchantmentRegistry) {
         RandomSource random = zombie.getRandom();
         if (armorLevel == ArmorLevel.IRON){
-            zombie.setItemSlot(EquipmentSlot.MAINHAND, createEnchantedSingleWeapon(Items.MACE, ArmorLevel.IRON, random, 2, 2, enchantmentRegistry));
+            zombie.setItemSlot(EquipmentSlot.MAINHAND, createEnchantedSingleWeapon(Items.MACE, ArmorLevel.IRON, zombie.level().getDifficulty(), random, 2, 2, enchantmentRegistry));
         } else if (armorLevel == ArmorLevel.DIAMOND){
-            zombie.setItemSlot(EquipmentSlot.MAINHAND, createEnchantedSingleWeapon(Items.MACE, ArmorLevel.DIAMOND, random, 3, 3, enchantmentRegistry));
+            zombie.setItemSlot(EquipmentSlot.MAINHAND, createEnchantedSingleWeapon(Items.MACE, ArmorLevel.DIAMOND, zombie.level().getDifficulty(), random, 3, 3, enchantmentRegistry));
         } else if (armorLevel == ArmorLevel.NETHERITE){
-            zombie.setItemSlot(EquipmentSlot.MAINHAND, createEnchantedSingleWeapon(Items.MACE, ArmorLevel.NETHERITE, random, 4, 4, enchantmentRegistry));
+            zombie.setItemSlot(EquipmentSlot.MAINHAND, createEnchantedSingleWeapon(Items.MACE, ArmorLevel.NETHERITE, zombie.level().getDifficulty(), random, 4, 4, enchantmentRegistry));
         }
     }
 
@@ -138,18 +139,41 @@ public class ZombieEquipHandler {
         }
     }
 
-    public static ItemStack createEnchantedSingleWeapon(Item item, ArmorLevel armorLevel, RandomSource random, int maxLevel, int totalLevel, Registry<Enchantment> enchantmentRegistry) {
+    public static ItemStack createEnchantedSingleWeapon(Item item, ArmorLevel armorLevel, Difficulty difficulty, RandomSource random, int maxLevel, int totalLevel, Registry<Enchantment> enchantmentRegistry) {
         List<ResourceKey<Enchantment>> availableEnchantments = switch (armorLevel){
             case IRON -> new ArrayList<>(IRON_MACE_ENCHANTMENTS);
             case DIAMOND -> new ArrayList<>(DIAMOND_MACE_ENCHANTMENTS);
             case NETHERITE -> new ArrayList<>(NETHERITE_MACE_COMMON_ENCHANTMENTS);
         };
         ItemStack enchantedItem = randomEnchant(item, random, maxLevel, totalLevel, availableEnchantments, enchantmentRegistry);
-        if (armorLevel == ArmorLevel.NETHERITE){
-            // choose one of the extra enchantments, level 1 or 2
-            enchantedItem.enchant(enchantmentRegistry.getOrThrow(NETHERITE_MACE_EXTRA_ENCHANTMENTS.get(random.nextInt(3))), random.nextInt(1,3));
+        if (armorLevel == ArmorLevel.NETHERITE) {
+            enchantedItem.enchant(
+                    enchantmentRegistry.getOrThrow(NETHERITE_MACE_ATTACK_ENCHANTMENTS.get(random.nextInt(NETHERITE_MACE_ATTACK_ENCHANTMENTS.size()))),
+                    random.nextInt(1, 3)
+            );
+        }
+        if (random.nextFloat() < getWindBurstChance(armorLevel, difficulty)) {
+            enchantedItem.enchant(enchantmentRegistry.getOrThrow(Enchantments.WIND_BURST), random.nextInt(1, 3));
         }
         return enchantedItem;
+    }
+
+    private static float getWindBurstChance(ArmorLevel armorLevel, Difficulty difficulty) {
+        return switch (armorLevel) {
+            case IRON -> 0.0F;
+            case DIAMOND -> switch (difficulty) {
+                case EASY -> 0.5F;
+                case NORMAL -> 0.6F;
+                case HARD -> 0.7F;
+                case PEACEFUL -> 0.0F;
+            };
+            case NETHERITE -> switch (difficulty) {
+                case EASY -> 0.8F;
+                case NORMAL -> 0.9F;
+                case HARD -> 0.95F;
+                case PEACEFUL -> 0.0F;
+            };
+        };
     }
 
     public static void createEnchantedArmor(Zombie zombie, ArmorLevel armorLevel, Registry<Enchantment> enchantmentRegistry) {

@@ -1,5 +1,6 @@
 package net.lostpatrol.mobstactician.event.equips;
 
+import net.lostpatrol.mobstactician.config.Config;
 import net.lostpatrol.mobstactician.util.Constants;
 import net.lostpatrol.mobstactician.util.Constants.ArmorLevel;
 import net.minecraft.core.Holder;
@@ -22,7 +23,6 @@ import java.util.List;
 import static net.lostpatrol.mobstactician.util.Constants.ENHANCED_SKELETON_BOOLEAN;
 
 public class SkeletonEquipHandler {
-    private static final float TACTICAL_SKELETON_CHANCE = 1f;
     private static final float EQUIP_IRON_CHANCE = 0.4f;
     private static final float EQUIP_DIAMOND_CHANCE = 0.3f;
     private static final float EQUIP_NETHERITE_CHANCE = 0.1f;
@@ -95,12 +95,12 @@ public class SkeletonEquipHandler {
             return;
         }
 
-        if (!isArmorEmpty(skeleton)) {
+        if (!Config.DEBUG_MODE.get() && !isArmorEmpty(skeleton)) {
             skeleton.getPersistentData().putBoolean(Constants.ENHANCED_SKELETON_BOOLEAN, false);
             return;
         }
 
-        if (skeleton.getRandom().nextFloat() < TACTICAL_SKELETON_CHANCE) {
+        if (Config.roll(Config.SKELETON_TACTICAL_CHANCE.get(), skeleton.getRandom())) {
             setupTacticalSkeleton(skeleton, enchantmentRegistry);
         } else {
             skeleton.getPersistentData().putBoolean(Constants.ENHANCED_SKELETON_BOOLEAN, false);

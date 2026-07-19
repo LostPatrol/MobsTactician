@@ -2,7 +2,6 @@ package net.lostpatrol.mobstactician.client.render.entity.layers;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
-import net.lostpatrol.mobstactician.MobsTactician;
 import net.lostpatrol.mobstactician.client.model.EnhancedPhantomModel;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
@@ -10,10 +9,9 @@ import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.lostpatrol.mobstactician.client.render.entity.state.PhantomHoldingRenderState;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import org.slf4j.Logger;
 
 public class PhantomRocketLayer extends RenderLayer<PhantomHoldingRenderState, EnhancedPhantomModel> {
-    public static final Logger logger = MobsTactician.LOGGER;
+    private static final float MODEL_UNIT = 1.0F / 16.0F;
 
     public PhantomRocketLayer(RenderLayerParent<PhantomHoldingRenderState, EnhancedPhantomModel> renderLayerParent) {
         super(renderLayerParent);
@@ -23,21 +21,11 @@ public class PhantomRocketLayer extends RenderLayer<PhantomHoldingRenderState, E
         ItemStackRenderState itemstackrenderstate = phantomRenderState.offhandItem;
         if (!itemstackrenderstate.isEmpty()) {
             poseStack.pushPose();
-            poseStack.translate(this.getParentModel().rightWingTip.x / 16.0F, this.getParentModel().rightWingTip.y / 16.0F, this.getParentModel().rightWingTip.z / 16.0F);
-
-            poseStack.mulPose(Axis.ZP.rotation(this.getParentModel().rightWingBase.zRot));
-            poseStack.mulPose(Axis.ZP.rotation(this.getParentModel().rightWingTip.zRot));
-
-            poseStack.mulPose(Axis.ZP.rotation(0.27F));
-            poseStack.mulPose(Axis.YP.rotationDegrees(yRot));
-//            poseStack.mulPose(Axis.XP.rotationDegrees(xRot));
-
-//            poseStack.translate(0.06F, 0.27F, -0.5F);
-            poseStack.translate(-0.5F, 0F, -0.5F);
-
+            this.getParentModel().translateToRightWingTip(poseStack);
+            poseStack.translate(-5.7F * MODEL_UNIT, 1.5F * MODEL_UNIT, -MODEL_UNIT);
+            poseStack.mulPose(Axis.ZP.rotationDegrees(15.5F));
             poseStack.mulPose(Axis.XP.rotationDegrees(-90.0F));
-
-            poseStack.scale(1.5F, 1.5F, 1.5F);
+            poseStack.mulPose(Axis.YP.rotationDegrees(180.0F));
 
             itemstackrenderstate.submit(poseStack, submitNodeCollector, packedLight, OverlayTexture.NO_OVERLAY, phantomRenderState.outlineColor);
             poseStack.popPose();

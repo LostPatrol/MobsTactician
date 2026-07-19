@@ -1,6 +1,5 @@
 package net.lostpatrol.mobstactician.entity.ai.phantom;
 
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.goal.Goal;
@@ -9,7 +8,6 @@ import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.entity.monster.Phantom;
 import net.minecraft.world.entity.monster.spider.Spider;
 import net.minecraft.world.entity.monster.zombie.Zombie;
-import net.minecraft.world.item.Items;
 import org.jspecify.annotations.Nullable;
 
 import java.util.EnumSet;
@@ -20,11 +18,6 @@ public final class PhantomCarrier {
 
     public static boolean isSupportedPassenger(Entity entity) {
         return entity instanceof Zombie || entity instanceof Spider || entity instanceof Creeper;
-    }
-
-    public static boolean hasRocketSpearLoadout(Phantom phantom) {
-        return phantom.getMainHandItem().get(DataComponents.KINETIC_WEAPON) != null
-                && phantom.getOffhandItem().is(Items.FIREWORK_ROCKET);
     }
 
     public static @Nullable Mob getPassenger(Phantom phantom) {

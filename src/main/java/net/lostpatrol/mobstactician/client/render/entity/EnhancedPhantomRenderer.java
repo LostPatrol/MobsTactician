@@ -6,7 +6,6 @@ import net.lostpatrol.mobstactician.MobsTactician;
 import net.lostpatrol.mobstactician.client.render.entity.layers.PhantomRocketLayer;
 import net.lostpatrol.mobstactician.client.render.entity.layers.PhantomWeaponLayer;
 import net.lostpatrol.mobstactician.client.model.EnhancedPhantomModel;
-import net.lostpatrol.mobstactician.util.Constants;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.MobRenderer;
@@ -44,8 +43,18 @@ public class EnhancedPhantomRenderer extends MobRenderer<Phantom, PhantomHolding
     public void extractRenderState(@NotNull Phantom phantom, @NotNull PhantomHoldingRenderState renderState, float partialTick) {
         super.extractRenderState(phantom, renderState, partialTick);
 
-        this.itemModelResolver.updateForLiving(renderState.mainHandItem, phantom.getMainHandItem(), ItemDisplayContext.GROUND, phantom);
-        this.itemModelResolver.updateForLiving(renderState.offhandItem, phantom.getOffhandItem(), ItemDisplayContext.GROUND, phantom);
+        this.itemModelResolver.updateForLiving(
+                renderState.mainHandItem,
+                phantom.getMainHandItem(),
+                ItemDisplayContext.THIRD_PERSON_RIGHT_HAND,
+                phantom
+        );
+        this.itemModelResolver.updateForLiving(
+                renderState.offhandItem,
+                phantom.getOffhandItem(),
+                ItemDisplayContext.THIRD_PERSON_LEFT_HAND,
+                phantom
+        );
 
         renderState.flapTime = phantom.getUniqueFlapTickOffset() + renderState.ageInTicks;
         renderState.size = phantom.getPhantomSize();

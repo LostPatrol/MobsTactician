@@ -33,8 +33,7 @@ public class PhantomPickupPassengerGoal extends Goal {
     public boolean canUse() {
         if (this.phantom.getTarget() != null
                 || this.phantom.attackPhase != Phantom.AttackPhase.CIRCLE
-                || this.phantom.isVehicle()
-                || PhantomCarrier.hasRocketSpearLoadout(this.phantom)) {
+                || this.phantom.isVehicle()) {
             this.nextSearchTick = this.phantom.tickCount + IDLE_TICKS;
             return false;
         }
@@ -65,8 +64,7 @@ public class PhantomPickupPassengerGoal extends Goal {
                 && !this.pickupTarget.isVehicle()
                 && this.phantom.getTarget() == null
                 && !this.phantom.isVehicle()
-                && this.phantom.attackPhase == Phantom.AttackPhase.CIRCLE
-                && !PhantomCarrier.hasRocketSpearLoadout(this.phantom);
+                && this.phantom.attackPhase == Phantom.AttackPhase.CIRCLE;
     }
 
     @Override

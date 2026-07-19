@@ -1,6 +1,8 @@
 package net.lostpatrol.mobstactician.event.listeners;
 
 import net.lostpatrol.mobstactician.MobsTactician;
+import net.lostpatrol.mobstactician.util.Constants;
+import net.lostpatrol.mobstactician.util.TacticalMob;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.entity.monster.Creeper;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -19,6 +21,10 @@ public final class CreeperFallExplosionListener {
         }
 
         if (!(event.getEntity() instanceof Creeper creeper)) {
+            return;
+        }
+
+        if (!TacticalMob.isTactical(creeper, Constants.ENHANCED_CREEPER_BOOLEAN)) {
             return;
         }
 

@@ -15,7 +15,6 @@
     import net.minecraft.world.entity.*;
     import net.minecraft.world.entity.ai.goal.Goal;
     import net.minecraft.world.entity.monster.zombie.Zombie;
-    import net.minecraft.world.entity.player.Player;
     import net.minecraft.world.entity.projectile.hurtingprojectile.windcharge.WindCharge;
     import net.minecraft.world.item.ItemStack;    import net.minecraft.world.item.Items;
     import net.minecraft.world.item.MaceItem;
@@ -53,8 +52,7 @@
         private long lastCanUseCheck;
         private int ticksUntilNextAttack;
 
-        private static final int MIN_JUMP_DISTANCE = 4;
-        private static final int MIN_JUMP_DISTANCE_BABY = 2;
+        private static final int PREPARATION_DISTANCE = 16;
         private static final int MAX_JUMP_DISTANCE = 8;
 
         private static final int MAX_JUMP_TICKS = 50;
@@ -76,13 +74,9 @@
             LivingEntity target = this.zombie.getTarget();
             if (target == null || !target.isAlive() || !this.hasMace() || !this.hasWindCharge()) {
                 return false;
-            } else if (this.zombie.isWithinMeleeAttackRange(target)) {
-                return false;
             }
 
-            double dist = zombie.distanceTo(target);
-            boolean isPlayer = target instanceof Player;
-            if (dist > MAX_JUMP_DISTANCE || (isPlayer && dist < getMinJumpDistance())) {
+            if (zombie.distanceTo(target) > PREPARATION_DISTANCE) {
                 return false;
             }
 
@@ -105,16 +99,8 @@
                 return false;
             }
 
-            double dist = zombie.distanceTo(target);
-            if (dist >= MAX_JUMP_DISTANCE) {
-                return false;
-            }
-            if (target instanceof Player player) {
-                if (player.isSpectator() || player.isCreative() || dist < getMinJumpDistance())
-                    return false;
-            }
-
-            return !zombie.isWithinMeleeAttackRange(target);
+            return EntitySelector.NO_CREATIVE_OR_SPECTATOR.test(target)
+                    && zombie.distanceTo(target) <= PREPARATION_DISTANCE;
         }
 
         @Override
@@ -122,6 +108,11 @@
             this.zombie.setAggressive(true);
             this.isWindJumping = false;
             this.ticksSinceJump = 0;
+            LivingEntity target = this.zombie.getTarget();
+            if (target != null) {
+                this.zombie.getLookControl().setLookAt(target, 30.0F, 30.0F);
+                this.zombie.getNavigation().moveTo(target, this.speedModifier);
+            }
         }
 
         @Override
@@ -131,11 +122,13 @@
             this.ticksSinceJump = 0;
 
             LivingEntity target = this.zombie.getTarget();
-            if (target != null && !EntitySelector.NO_CREATIVE_OR_SPECTATOR.test(target)) {
-                this.zombie.setTarget(null);
+            if (target == null || !target.isAlive() || !EntitySelector.NO_CREATIVE_OR_SPECTATOR.test(target)) {
+                if (target != null && !EntitySelector.NO_CREATIVE_OR_SPECTATOR.test(target)) {
+                    this.zombie.setTarget(null);
+                }
+                this.zombie.setAggressive(false);
+                this.zombie.getNavigation().stop();
             }
-            this.zombie.setAggressive(false);
-            this.zombie.getNavigation().stop();
         }
 
         @Override
@@ -151,21 +144,15 @@
 
             if (zombie.onGround() || zombie.isInWater()) {
                 isWindJumping = false;
-                ticksSinceJump += 1;
-                if (ticksSinceJump >= MAX_JUMP_TICKS) {
-                    boolean isPlayer = target instanceof Player;
-                    // Be more dangerous if target is not a player
-                    boolean distanceOk = isPlayer ? (distance >= getMinJumpDistance() && distance <= MAX_JUMP_DISTANCE)
-                                                 : (distance <= MAX_JUMP_DISTANCE);
-
-                    if (distanceOk &&
-                            zombie.onGround() &&
-                            isTimeToAttack() &&
-                            zombie.getRandom().nextFloat() < WIND_JUMP_CHANCE) {
-
-                        performWindJump(target);
-                    }
-                } else {
+                ticksSinceJump = Math.min(ticksSinceJump + 1, MAX_JUMP_TICKS);
+                if (ticksSinceJump >= MAX_JUMP_TICKS
+                        && distance <= MAX_JUMP_DISTANCE
+                        && zombie.onGround()
+                        && isTimeToAttack()
+                        && zombie.getRandom().nextFloat() < WIND_JUMP_CHANCE) {
+                    performWindJump(target);
+                }
+                if (!isWindJumping) {
                     zombie.getNavigation().moveTo(target, speedModifier);
                 }
             } else if (isWindJumping) {
@@ -264,7 +251,7 @@
 //            zombie.setDeltaMovement(zombie.getDeltaMovement().with(Direction.Axis.Y, 0.01F));
             zombie.fallDistance = 0;
 
-            if(this.hasWindBurst == -1 && this.armorLevel == ArmorLevel.NETHERITE) {
+            if(this.hasWindBurst == -1) {
                 Registry<Enchantment> enchantmentRegistry = zombie.level().registryAccess().lookupOrThrow(Registries.ENCHANTMENT);
                 if (zombie.getMainHandItem().getEnchantmentLevel(enchantmentRegistry.getOrThrow(Enchantments.WIND_BURST)) > 0) {
                     this.hasWindBurst = 1;
@@ -321,9 +308,5 @@
                 aabb = zombie.getBoundingBox();
             }
             return aabb.inflate(attackReach, 0.0, attackReach);
-        }
-
-        private double getMinJumpDistance(){
-            return this.zombie.isBaby() ?  MIN_JUMP_DISTANCE_BABY : MIN_JUMP_DISTANCE;
         }
     }

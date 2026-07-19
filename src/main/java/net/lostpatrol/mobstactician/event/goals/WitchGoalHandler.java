@@ -2,6 +2,8 @@ package net.lostpatrol.mobstactician.event.goals;
 
 import net.lostpatrol.mobstactician.entity.ai.witch.WitchProactiveFireResistanceGoal;
 import net.lostpatrol.mobstactician.entity.ai.witch.WitchSupportGoal;
+import net.lostpatrol.mobstactician.util.Constants;
+import net.lostpatrol.mobstactician.util.TacticalMob;
 import net.minecraft.world.entity.ai.goal.WrappedGoal;
 import net.minecraft.world.entity.monster.Witch;
 
@@ -10,6 +12,10 @@ public final class WitchGoalHandler {
     }
 
     public static void ensureGoals(Witch witch) {
+        if (!TacticalMob.isTactical(witch, Constants.ENHANCED_WITCH_BOOLEAN)) {
+            return;
+        }
+
         boolean hasFireResistanceGoal = false;
         boolean hasSupportGoal = false;
 

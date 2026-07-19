@@ -5,7 +5,12 @@ import net.lostpatrol.mobstactician.MobsTactician;
 public class Constants {
     public static final String ENHANCED_ZOMBIE_BOOLEAN = MobsTactician.MODID + ".enhanced_zombie";
     public static final String ENHANCED_PHANTOM_BOOLEAN = MobsTactician.MODID + ".enhanced_phantom";
+    public static final String PHANTOM_SPEAR_BOOLEAN = MobsTactician.MODID + ".phantom_spear";
+    public static final String PHANTOM_CARRIER_BOOLEAN = MobsTactician.MODID + ".phantom_carrier";
     public static final String ENHANCED_SKELETON_BOOLEAN = MobsTactician.MODID + ".enhanced_skeleton";
+    public static final String ENHANCED_CREEPER_BOOLEAN = MobsTactician.MODID + ".enhanced_creeper";
+    public static final String ENHANCED_IRON_GOLEM_BOOLEAN = MobsTactician.MODID + ".enhanced_iron_golem";
+    public static final String ENHANCED_WITCH_BOOLEAN = MobsTactician.MODID + ".enhanced_witch";
     /** Remaining defensive block count for tactical skeleton. */
     public static final String SKELETON_BLOCK_COUNT = MobsTactician.MODID + ".block_count";
     /** Defense block item id string used by block-defense goal. */
@@ -33,6 +38,7 @@ public class Constants {
     public static final String IRON_GOLEM_SELF_REPAIR_FINISH_TICK = MobsTactician.MODID + ".iron_golem_self_repair_finish_tick";
     public static final String IRON_GOLEM_SELF_REPAIR_ACTIVE = MobsTactician.MODID + ".iron_golem_self_repair_active";
     public static final String IRON_GOLEM_SELF_REPAIR_ORIGINAL_DROP_CHANCE = MobsTactician.MODID + ".iron_golem_self_repair_original_drop_chance";
+    public static final String IRON_GOLEM_REPAIR_TARGET_UUID = MobsTactician.MODID + ".iron_golem_repair_target_uuid";
 
     public enum ArmorLevel {
         IRON,

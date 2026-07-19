@@ -1,6 +1,8 @@
 package net.lostpatrol.mobstactician.event.listeners;
 
 import net.lostpatrol.mobstactician.MobsTactician;
+import net.lostpatrol.mobstactician.util.Constants;
+import net.lostpatrol.mobstactician.util.TacticalMob;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityReference;
 import net.minecraft.world.entity.EntityType;
@@ -46,6 +48,7 @@ public final class IronGolemProjectileDefenseListener {
 
         if (!(hitResult instanceof EntityHitResult entityHitResult)
                 || !(entityHitResult.getEntity() instanceof IronGolem ironGolem)
+                || !TacticalMob.isTactical(ironGolem, Constants.ENHANCED_IRON_GOLEM_BOOLEAN)
                 || ignoresPlayerProjectile(ironGolem, throwable)) {
             throwable.setDeltaMovement(originalMovement);
             return;
@@ -63,6 +66,7 @@ public final class IronGolemProjectileDefenseListener {
         if (projectile.level().isClientSide()
                 || !(event.getRayTraceResult() instanceof EntityHitResult entityHitResult)
                 || !(entityHitResult.getEntity() instanceof IronGolem ironGolem)
+                || !TacticalMob.isTactical(ironGolem, Constants.ENHANCED_IRON_GOLEM_BOOLEAN)
                 || !isDeflectable(projectile)
                 || ignoresPlayerProjectile(ironGolem, projectile)) {
             return;

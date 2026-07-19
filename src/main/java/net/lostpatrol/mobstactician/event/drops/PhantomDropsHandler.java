@@ -24,7 +24,7 @@ public class PhantomDropsHandler {
         if (!(event.getEntity() instanceof Phantom phantom))
             return;
 
-        if(! phantom.getPersistentData().getBoolean(Constants.ENHANCED_PHANTOM_BOOLEAN).orElse(false))
+        if(!phantom.getPersistentData().getBoolean(Constants.PHANTOM_SPEAR_BOOLEAN).orElse(false))
             return;
 
         RandomSource random = phantom.getRandom();
@@ -37,7 +37,9 @@ public class PhantomDropsHandler {
         }
 
         // Weapon drop
-        if (!Util.isItemInDrops(event.getDrops(), Items.NETHERITE_SPEAR) && random.nextFloat() < 0.4f) {
+        if (!phantom.getMainHandItem().isEmpty()
+                && !Util.isItemInDrops(event.getDrops(), Items.NETHERITE_SPEAR)
+                && random.nextFloat() < 0.4f) {
             ItemStack weaponDrop = phantom.getItemBySlot(EquipmentSlot.MAINHAND).copy();
             event.getDrops().add(new ItemEntity(phantom.level(), phantom.getX(), phantom.getY(), phantom.getZ(), Util.applyRandomDamage(weaponDrop, random, 0.2f, 0.75f)));
         }

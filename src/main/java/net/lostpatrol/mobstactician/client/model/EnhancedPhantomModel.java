@@ -1,94 +1,37 @@
 package net.lostpatrol.mobstactician.client.model;
 
-
-import net.minecraft.client.model.EntityModel;
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.model.geom.ModelPart;
-import net.minecraft.client.model.geom.PartPose;
-import net.minecraft.client.model.geom.builders.CubeListBuilder;
-import net.minecraft.client.model.geom.builders.LayerDefinition;
-import net.minecraft.client.model.geom.builders.MeshDefinition;
-import net.minecraft.client.model.geom.builders.PartDefinition;
-import net.lostpatrol.mobstactician.client.render.entity.state.PhantomHoldingRenderState;
-import net.minecraft.util.Mth;
+import net.minecraft.client.model.monster.phantom.PhantomModel;
 
-public class EnhancedPhantomModel extends EntityModel<PhantomHoldingRenderState> {
-    public static final String TAIL_BASE = "tail_base";
-    public static final String TAIL_TIP = "tail_tip";
-    public final ModelPart leftWingBase;
-    public final ModelPart leftWingTip;
-    public final ModelPart rightWingBase;
-    public final ModelPart rightWingTip;
-    public final ModelPart tailBase;
-    public final ModelPart tailTip;
-
-    public ModelPart leftWeaponMount;
-    public ModelPart middleWeaponMount;
-    public ModelPart rightWeaponMount;
+public class EnhancedPhantomModel extends PhantomModel {
+    private final ModelPart body;
+    private final ModelPart leftWingBase;
+    private final ModelPart leftWingTip;
+    private final ModelPart rightWingBase;
+    private final ModelPart rightWingTip;
 
     public EnhancedPhantomModel(ModelPart root) {
         super(root);
-        ModelPart modelpart = root.getChild("body");
-        this.tailBase = modelpart.getChild("tail_base");
-        this.tailTip = this.tailBase.getChild("tail_tip");
-        this.leftWingBase = modelpart.getChild("left_wing_base");
+        this.body = root.getChild("body");
+        this.leftWingBase = this.body.getChild("left_wing_base");
         this.leftWingTip = this.leftWingBase.getChild("left_wing_tip");
-        this.rightWingBase = modelpart.getChild("right_wing_base");
+        this.rightWingBase = this.body.getChild("right_wing_base");
         this.rightWingTip = this.rightWingBase.getChild("right_wing_tip");
-
-        this.leftWeaponMount = this.leftWingTip;
-        this.middleWeaponMount = this.leftWingBase;
-        this.rightWeaponMount = this.rightWingTip;
     }
 
-    public static LayerDefinition createBodyLayer() {
-        MeshDefinition meshdefinition = new MeshDefinition();
-        PartDefinition partdefinition = meshdefinition.getRoot();
-        PartDefinition partdefinition1 = partdefinition.addOrReplaceChild(
-                "body", CubeListBuilder.create().texOffs(0, 8).addBox(-3.0F, -2.0F, -8.0F, 5.0F, 3.0F, 9.0F), PartPose.rotation(-0.1F, 0.0F, 0.0F)
-        );
-        PartDefinition partdefinition2 = partdefinition1.addOrReplaceChild(
-                "tail_base", CubeListBuilder.create().texOffs(3, 20).addBox(-2.0F, 0.0F, 0.0F, 3.0F, 2.0F, 6.0F), PartPose.offset(0.0F, -2.0F, 1.0F)
-        );
-        partdefinition2.addOrReplaceChild(
-                "tail_tip", CubeListBuilder.create().texOffs(4, 29).addBox(-1.0F, 0.0F, 0.0F, 1.0F, 1.0F, 6.0F), PartPose.offset(0.0F, 0.5F, 6.0F)
-        );
-        PartDefinition partdefinition3 = partdefinition1.addOrReplaceChild(
-                "left_wing_base",
-                CubeListBuilder.create().texOffs(23, 12).addBox(0.0F, 0.0F, 0.0F, 6.0F, 2.0F, 9.0F),
-                PartPose.offsetAndRotation(2.0F, -2.0F, -8.0F, 0.0F, 0.0F, 0.1F)
-        );
-        partdefinition3.addOrReplaceChild(
-                "left_wing_tip",
-                CubeListBuilder.create().texOffs(16, 24).addBox(0.0F, 0.0F, 0.0F, 13.0F, 1.0F, 9.0F),
-                PartPose.offsetAndRotation(6.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.1F)
-        );
-        PartDefinition partdefinition4 = partdefinition1.addOrReplaceChild(
-                "right_wing_base",
-                CubeListBuilder.create().texOffs(23, 12).mirror().addBox(-6.0F, 0.0F, 0.0F, 6.0F, 2.0F, 9.0F),
-                PartPose.offsetAndRotation(-3.0F, -2.0F, -8.0F, 0.0F, 0.0F, -0.1F)
-        );
-        partdefinition4.addOrReplaceChild(
-                "right_wing_tip",
-                CubeListBuilder.create().texOffs(16, 24).mirror().addBox(-13.0F, 0.0F, 0.0F, 13.0F, 1.0F, 9.0F),
-                PartPose.offsetAndRotation(-6.0F, 0.0F, 0.0F, 0.0F, 0.0F, -0.1F)
-        );
-        partdefinition1.addOrReplaceChild(
-                "head",
-                CubeListBuilder.create().texOffs(0, 0).addBox(-4.0F, -2.0F, -5.0F, 7.0F, 3.0F, 5.0F),
-                PartPose.offsetAndRotation(0.0F, 1.0F, -7.0F, 0.2F, 0.0F, 0.0F)
-        );
-        return LayerDefinition.create(meshdefinition, 64, 64);
+    public void translateToLeftWingTip(PoseStack poseStack) {
+        this.translateToWingTip(poseStack, this.leftWingBase, this.leftWingTip);
     }
 
-    public void setupAnim(PhantomHoldingRenderState renderState) {
-        super.setupAnim(renderState);
-        float f = renderState.flapTime * 7.448451F * (float) (Math.PI / 180.0);
-        float f1 = 16.0F;
-        this.leftWingBase.zRot = Mth.cos(f) * 16.0F * (float) (Math.PI / 180.0);
-        this.leftWingTip.zRot = Mth.cos(f) * 16.0F * (float) (Math.PI / 180.0);
-        this.rightWingBase.zRot = -this.leftWingBase.zRot;
-        this.rightWingTip.zRot = -this.leftWingTip.zRot;
-        this.tailBase.xRot = -(5.0F + Mth.cos(f * 2.0F) * 5.0F) * (float) (Math.PI / 180.0);
-        this.tailTip.xRot = -(5.0F + Mth.cos(f * 2.0F) * 5.0F) * (float) (Math.PI / 180.0);
+    public void translateToRightWingTip(PoseStack poseStack) {
+        this.translateToWingTip(poseStack, this.rightWingBase, this.rightWingTip);
+    }
+
+    private void translateToWingTip(PoseStack poseStack, ModelPart wingBase, ModelPart wingTip) {
+        this.root().translateAndRotate(poseStack);
+        this.body.translateAndRotate(poseStack);
+        wingBase.translateAndRotate(poseStack);
+        wingTip.translateAndRotate(poseStack);
     }
 }

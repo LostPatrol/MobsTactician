@@ -28,6 +28,7 @@ public class PhantomRocketChargeAttackGoal extends Goal{
     public static final Logger logger = MobsTactician.LOGGER;
 
     private final Phantom phantom;
+    private static final double MIN_PLAYER_DISTANCE_SQR = 6.0 * 6.0;
     private static final int ROCKET_DELAY_TICKS = 30;
     private static final int ROCKET_DURATION = 20;
     private boolean hasUsedRocket;
@@ -47,17 +48,25 @@ public class PhantomRocketChargeAttackGoal extends Goal{
 
     @Override
     public boolean canUse() {
-        if (this.phantom.getTarget() == null || this.phantom.attackPhase != Phantom.AttackPhase.SWOOP) {
+        LivingEntity target = this.phantom.getTarget();
+        if (!this.meetsGoalConditions(target)) {
+            return false;
+        }
+        return !(target instanceof Player) || this.phantom.distanceToSqr(target) > MIN_PLAYER_DISTANCE_SQR;
+    }
+
+    private boolean meetsGoalConditions(LivingEntity target) {
+        if (target == null || this.phantom.attackPhase != Phantom.AttackPhase.SWOOP) {
             return false;
         }
         if (this.phantom.isVehicle()) {
             return false;
         }
-        if (!this.phantom.getPersistentData().getBoolean(Constants.ENHANCED_PHANTOM_BOOLEAN).orElse(false)){
+        if (!this.phantom.getPersistentData().getBoolean(Constants.PHANTOM_SPEAR_BOOLEAN).orElse(false)){
             return false;
         }
 //        return (phantom.getMainHandItem().get(DataComponents.KINETIC_WEAPON)!=null) && phantom.getOffhandItem().getItem() == Items.FIREWORK_ROCKET;
-        return phantom.getOffhandItem().getItem() == Items.FIREWORK_ROCKET;
+        return this.hasUsedRocket || phantom.getOffhandItem().getItem() == Items.FIREWORK_ROCKET;
     }
 
     @Override
@@ -70,7 +79,7 @@ public class PhantomRocketChargeAttackGoal extends Goal{
             return false;
         } else if (livingentity instanceof Player player && (livingentity.isSpectator() || player.isCreative())) {
             return false;
-        } else if (!this.canUse()) {
+        } else if (!this.meetsGoalConditions(livingentity)) {
             return false;
         } else {
             if (this.phantom.tickCount > this.catSearchTick) {
@@ -93,6 +102,9 @@ public class PhantomRocketChargeAttackGoal extends Goal{
         this.isAccelerating = false;
         this.acceleratedTicks = 0;
         this.acceleratingDuration = ROCKET_DURATION + this.phantom.level().getDifficulty().ordinal() * 5;
+        if (this.phantom.getMainHandItem().get(DataComponents.KINETIC_WEAPON) != null) {
+            this.phantom.startUsingItem(InteractionHand.MAIN_HAND);
+        }
     }
 
     @Override
@@ -118,8 +130,6 @@ public class PhantomRocketChargeAttackGoal extends Goal{
                     this.hasUsedRocket = true;
                     this.isAccelerating = true;
                     this.acceleratedTicks = 0;
-                    if (this.phantom.getMainHandItem().get(DataComponents.KINETIC_WEAPON) != null)
-                       this.phantom.startUsingItem(InteractionHand.MAIN_HAND);
                 }
             }
 
@@ -144,26 +154,23 @@ public class PhantomRocketChargeAttackGoal extends Goal{
                     this.acceleratedTicks++;
                 } else {
                     this.isAccelerating = false;
-                    this.phantom.stopUsingItem();
                 }
             }
 
             if (this.phantom.getBoundingBox().inflate(0.2F).intersects(livingentity.getBoundingBox())) {
                 if (!this.phantom.level().isClientSide()) {
-                    if (this.phantom.getMainHandItem().get(DataComponents.KINETIC_WEAPON) == null){
+                    boolean isUsingKineticWeapon = this.phantom.isUsingItem()
+                            && this.phantom.getUsedItemHand() == InteractionHand.MAIN_HAND
+                            && this.phantom.getUseItem().get(DataComponents.KINETIC_WEAPON) != null;
+                    if (!isUsingKineticWeapon) {
                         this.phantom.doHurtTarget(getServerLevel(this.phantom.level()), livingentity);
-                    } else{
-                        // Here spear will damage entities automatically when it is being used. So we do nothing
-//                        spear.damageEntities(this.phantom.getMainHandItem(), 72000, this.phantom, EquipmentSlot.MAINHAND);
                     }
                 }
-                this.phantom.stopUsingItem();
                 this.phantom.attackPhase = Phantom.AttackPhase.CIRCLE;
                 if (!this.phantom.isSilent()) {
                     this.phantom.level().levelEvent(1039, this.phantom.blockPosition(), 0);
                 }
             } else if (this.phantom.horizontalCollision || this.phantom.hurtTime > 0) {
-                this.phantom.stopUsingItem();
                 this.phantom.attackPhase = Phantom.AttackPhase.CIRCLE;
             }
         }

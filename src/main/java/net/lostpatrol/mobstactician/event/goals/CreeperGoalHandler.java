@@ -1,6 +1,8 @@
 package net.lostpatrol.mobstactician.event.goals;
 
 import net.lostpatrol.mobstactician.entity.ai.creeper.CreeperPredictiveSwellGoal;
+import net.lostpatrol.mobstactician.util.Constants;
+import net.lostpatrol.mobstactician.util.TacticalMob;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.goal.SwellGoal;
 import net.minecraft.world.entity.ai.goal.WrappedGoal;
@@ -13,6 +15,10 @@ public class CreeperGoalHandler {
     private static final int DEFAULT_SWELL_GOAL_PRIORITY = 2;
 
     public static void ensureGoals(Creeper creeper) {
+        if (!TacticalMob.isTactical(creeper, Constants.ENHANCED_CREEPER_BOOLEAN)) {
+            return;
+        }
+
         int swellGoalPriority = DEFAULT_SWELL_GOAL_PRIORITY;
         boolean hasPredictiveSwellGoal = false;
         List<Goal> vanillaSwellGoals = new ArrayList<>();

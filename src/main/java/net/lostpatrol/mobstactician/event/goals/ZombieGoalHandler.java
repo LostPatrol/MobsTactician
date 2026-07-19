@@ -10,7 +10,7 @@ import net.minecraft.world.item.Items;
 
 public class ZombieGoalHandler {
     public static void ensureGoals(Zombie zombie) {
-        if (ZombieEquipHandler.isExcludedZombie(zombie) || !ZombieEquipHandler.isEnhancedZombie(zombie)) {
+        if (!ZombieEquipHandler.isEnhancedZombie(zombie)) {
             return;
         }
 

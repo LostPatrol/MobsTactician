@@ -13,6 +13,9 @@ import java.util.List;
 
 public class PhantomGoalHandler {
     public static void ensureGoals(Phantom phantom) {
+        if (!PhantomEquipHandler.isSpearPhantom(phantom) && !PhantomEquipHandler.isCarrierPhantom(phantom)) {
+            return;
+        }
         rerankPhantomGoals(phantom);
     }
 
@@ -33,13 +36,15 @@ public class PhantomGoalHandler {
         }
 
         toRemove.forEach(phantom.goalSelector::removeGoal);
-        if (!hasGoal(phantom, PhantomPassengerBombAttackGoal.class)) {
-            phantom.goalSelector.addGoal(2, new PhantomPassengerBombAttackGoal(phantom));
+        if (PhantomEquipHandler.isCarrierPhantom(phantom)) {
+            if (!hasGoal(phantom, PhantomPassengerBombAttackGoal.class)) {
+                phantom.goalSelector.addGoal(2, new PhantomPassengerBombAttackGoal(phantom));
+            }
+            if (!hasGoal(phantom, PhantomPickupPassengerGoal.class)) {
+                phantom.goalSelector.addGoal(2, new PhantomPickupPassengerGoal(phantom));
+            }
         }
-        if (!hasGoal(phantom, PhantomPickupPassengerGoal.class)) {
-            phantom.goalSelector.addGoal(2, new PhantomPickupPassengerGoal(phantom));
-        }
-        if (PhantomEquipHandler.isEnhancedPhantom(phantom) && !hasGoal(phantom, PhantomRocketChargeAttackGoal.class)) {
+        if (PhantomEquipHandler.isSpearPhantom(phantom) && !hasGoal(phantom, PhantomRocketChargeAttackGoal.class)) {
             phantom.goalSelector.addGoal(2, new PhantomRocketChargeAttackGoal(phantom));
         }
         if (vanillaAttackGoal != null) phantom.goalSelector.addGoal(3, vanillaAttackGoal);
